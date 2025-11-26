@@ -1,0 +1,500 @@
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f5f5f5;
+    color: #202124;
+}
+
+header {
+    background: #1a73e8;
+    color: #fff;
+    padding: 10px 0;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+header a {
+    color: #fff;
+    text-decoration: none;
+    margin-left: 15px;
+}
+
+.container {
+    width: 95%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+main {
+    padding: 20px 0 40px;
+}
+
+.hero {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+}
+
+.tool-card {
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.tool-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.tool-form {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.tool-form input,
+.tool-form textarea,
+.tool-form button {
+    display: block;
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 8px;
+    font-size: 14px;
+}
+
+.tool-form button,
+.btn {
+    background: #1a73e8;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.tool-form button:hover,
+.btn:hover {
+    opacity: 0.9;
+}
+
+.flash-container {
+    margin-bottom: 15px;
+}
+
+.flash {
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.flash.error {
+    background: #fce8e6;
+    color: #c5221f;
+}
+
+.flash.success {
+    background: #e6f4ea;
+    color: #137333;
+}
+
+.result {
+    margin-top: 15px;
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+footer {
+    background: #202124;
+    color: #fff;
+    padding: 15px 0;
+    font-size: 13px;
+    margin-top: 20px;
+}
+
+.pdf-image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.pdf-image-card {
+    background: #fff;
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.pdf-image-card img {
+    width: 100%;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
+    font-family: inherit;
+    border-radius: 6px;
+    resize: vertical;
+}
+
+.password-box {
+    background: #f1f3f4;
+    padding: 12px;
+    font-size: 20px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    text-align: center;
+    word-break: break-all;
+    font-family: monospace;
+}
+
+.result img {
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.result img {
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+.result ul {
+    list-style: none;
+    padding: 0;
+}
+
+.result li {
+    margin-bottom: 8px;
+}
+
+.upload-status {
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    font-weight: bold;
+    display: none;
+    transition: all 0.3s ease-in-out;
+}
+
+.upload-status.red {
+    background: #ffdddd;
+    border-left: 4px solid #ff4444;
+    color: #b30000;
+}
+
+.upload-status.green {
+    background: #ddffdd;
+    border-left: 4px solid #22bb33;
+    color: #0a7a22;
+}
+
+/* --- Audio Converter Premium UI --- */
+.glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.text-gradient {
+    background: linear-gradient(45deg, #6a11cb, #2575fc);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.btn-gradient {
+    background: linear-gradient(45deg, #6a11cb, #2575fc);
+    border: none;
+    color: white;
+    transition: transform 0.2s;
+}
+
+.btn-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(37, 117, 252, 0.4);
+}
+
+/* Drag & Drop */
+.drop-zone {
+    width: 100%;
+    height: 150px;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: "Quicksand", sans-serif;
+    font-weight: 500;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: #cccccc;
+    border: 3px dashed #6a11cb;
+    border-radius: 15px;
+    background-color: #f8f9fa;
+    transition: all 0.3s;
+}
+
+.drop-zone--over {
+    border-style: solid;
+    background-color: #e9ecef;
+    transform: scale(1.02);
+}
+
+.drop-zone__input {
+    display: none;
+}
+
+.drop-zone__thumb {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #cccccc;
+    background-size: cover;
+    position: relative;
+}
+
+.drop-zone--uploaded {
+    border-color: #28a745;
+    background-color: #e8f5e9;
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ================================
+   FIX: CENTRADO + DROPZONE AJUSTADA
+   ================================ */
+
+/* Centrar el card y limitar ancho */
+.container .glass-card {
+    margin: 0 auto;
+    max-width: 600px;
+    width: 100%;
+}
+
+/* Ajustar drop-zone al ancho del card SIEMPRE */
+.drop-zone {
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 25px;
+}
+
+/* Evitar que se deforme o estire */
+.drop-zone__thumb,
+.drop-zone--uploaded {
+    max-width: 100%;
+}
+
+/* El texto del archivo seleccionado centrado y sin romper layout */
+#file-info {
+    word-break: break-word;
+    max-width: 100%;
+}
+
+/* Mejor alineación general de inputs y selects */
+.form-select,
+.form-control {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Evitar que columnas se rompan en pantallas chicas */
+@media (max-width: 480px) {
+    .row > div {
+        margin-bottom: 15px;
+    }
+}
+
+/* BOTÓN GOOGLE APPS */
+.apps-btn {
+    font-size: 28px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.18);
+    transition: 0.2s ease;
+}
+
+.apps-btn:hover {
+    background: rgba(255,255,255,0.32);
+}
+
+/* PANEL GOOGLE APPS */
+.apps-panel {
+    position: absolute;
+    right: 20px;
+    top: 80px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    width: 330px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.18);
+    transform: scale(0.8);
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.25s ease;
+    z-index: 2000;
+}
+
+/* ITEM DEL GRID */
+.app-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px;
+    border-radius: 12px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+    gap: 6px;
+    transition: 0.2s ease;
+}
+
+.app-item i {
+    font-size: 28px;
+}
+
+.app-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+/* ANIMACIÓN PANEL */
+.apps-panel.active {
+    transform: scale(1);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Colores (ya usados antes) */
+.blue-word     { background: linear-gradient(135deg, #2a59d1, #467ff5); }
+.red-pdf       { background: linear-gradient(135deg, #cc171a, #f43c3f); }
+.green-excel   { background: linear-gradient(135deg, #0a7d42, #12b76a); }
+.orange-video  { background: linear-gradient(135deg, #e0761b, #ff9b42); }
+.yellow-qr     { background: linear-gradient(135deg, #dfb100, #f9d44f); color:#333; }
+.cyan-image    { background: linear-gradient(135deg, #17a1cc, #3cc5eb); }
+.purple-audio  { background: linear-gradient(135deg, #7d1fc1, #b66bff); }
+.gray-tools    { background: linear-gradient(135deg, #555, #777); }
+
+/* TITULO DEL MENU */
+.apps-title {
+    grid-column: span 3;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 6px 0 10px 2px;
+    color: #333;
+}
+
+/* PANEL GOOGLE APPS MEJORADO */
+.apps-panel {
+    position: absolute;
+    right: 20px;
+    top: 80px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    width: 330px;
+    max-height: 500px;       /* AUMENTADO */
+    overflow-y: auto;        /* SCROLL INTERNO */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.18);
+    transform: scale(0.8);
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.25s ease;
+    z-index: 2000;
+}
+
+/* Barra de scroll suave */
+.apps-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.apps-panel::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 6px;
+}
+
+/* Mantiene colores y hover */
+.app-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.start-btn a {
+    font-size: 26px;
+    color: white;
+    margin-right: 12px;
+}
+
+.menu-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.18);
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: white;
+    font-size: 15px;
+    font-weight: 500;
+    transition: 0.2s ease;
+    user-select: none;
+}
+
+.menu-button:hover {
+    background: rgba(255,255,255,0.30);
+}
+
+.menu-button a {
+    text-decoration: none;
+    color: white;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.apps-btn i,
+.start-btn i {
+    font-size: 20px;
+}

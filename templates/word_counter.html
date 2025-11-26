@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="glass-card p-5" style="max-width: 800px; width: 100%;">
+        <h1 class="text-center mb-4 text-gradient">Contador de Palabras Online</h1>
+
+        <p class="text-center text-muted mb-4">
+            Pegá tu texto y obtené el recuento de palabras, caracteres y estadísticas en segundos. 
+            Ideal para tareas, artículos y redes sociales.
+        </p>
+
+
+        <form method="post">
+            <div class="mb-4">
+                <textarea class="form-control p-3" name="text" rows="8" placeholder="Escribe o pega tu texto aquí..."
+                    required style="border-radius: 15px; border: 2px solid #e0e0e0;">{{ text }}</textarea>
+            </div>
+            <button class="btn btn-gradient w-100 py-3 fw-bold shadow-sm" type="submit">
+                📊 Contar Palabras
+            </button>
+        </form>
+
+        {% if result %}
+        <div class="row mt-5 g-3 animate-fade-in">
+            <div class="col-md-3 col-6">
+                <div class="card text-center h-100 border-0 shadow-sm py-3">
+                    <h3 class="text-primary fw-bold">{{ result.words }}</h3>
+                    <small class="text-muted">Palabras</small>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card text-center h-100 border-0 shadow-sm py-3">
+                    <h3 class="text-success fw-bold">{{ result.characters }}</h3>
+                    <small class="text-muted">Caracteres</small>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card text-center h-100 border-0 shadow-sm py-3">
+                    <h3 class="text-info fw-bold">{{ result.lines }}</h3>
+                    <small class="text-muted">Líneas</small>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card text-center h-100 border-0 shadow-sm py-3">
+                    <h3 class="text-warning fw-bold">{{ result.paragraphs }}</h3>
+                    <small class="text-muted">Párrafos</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- =============================== -->
+<!-- 🔥 SEO ON-PAGE DEL INDEX -->
+<!-- =============================== -->
+<!-- H1 específico para Google -->
+<h1 style="font-size:32px; font-weight:900; text-align:center; margin:10px 0;">
+    Herramientas Online para Convertir, Comprimir y Editar Archivos
+</h1>
+
+<!-- Descripción SEO secundaria -->
+<p style="text-align:center; color:#555; max-width:900px; margin:0 auto 25px;">
+    Convertí imágenes, PDF, audio y video en segundos. Más de 25 herramientas online gratis: 
+    conversión, compresión, OCR, edición, descargas y utilidades rápidas optimizadas para Argentina y Latinoamérica.
+</p>
+
+<!-- JSON-LD para Google -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Herramientas Online",
+  "url": "https://TU-DOMINIO.com/",
+  "description": "Plataforma gratuita con herramientas para convertir imágenes, PDF, audio y video. Compresión, OCR, edición y más.",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "All",
+  "creator": {
+    "@type": "Person",
+    "name": "Omar"
+  }
+}
+</script>
+
+<style>
+    .section-title {
+        font-size: 26px;
+        font-weight: 800;
+        margin-top: 35px;
+        margin-bottom: 10px;
+        color: #333;
+        border-left: 6px solid #6c63ff;
+        padding-left: 12px;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 22px;
+        margin-top: 15px;
+    }
+
+    .tool-card-neo {
+        padding: 22px;
+        border-radius: 14px;
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: #fff;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        transition: 0.30s ease;
+    }
+
+    .tool-card-neo:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+    }
+
+    .tool-icon {
+        font-size: 42px;
+        margin-bottom: 10px;
+    }
+
+    .tool-title {
+        font-size: 19px;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .tool-desc {
+        font-size: 14px;
+        opacity: 0.85;
+    }
+
+    /* PALETAS DE COLOR */
+    .blue-word     { background: linear-gradient(135deg, #2a59d1, #467ff5); }
+    .red-pdf       { background: linear-gradient(135deg, #cc171a, #f43c3f); }
+    .green-excel   { background: linear-gradient(135deg, #0a7d42, #12b76a); }
+    .orange-video  { background: linear-gradient(135deg, #e0761b, #ff9b42); }
+    .yellow-qr     { background: linear-gradient(135deg, #dfb100, #f9d44f); color:#333; }
+    .cyan-image    { background: linear-gradient(135deg, #17a1cc, #3cc5eb); }
+    .purple-audio  { background: linear-gradient(135deg, #7d1fc1, #b66bff); }
+    .gray-tools    { background: linear-gradient(135deg, #555, #777); }
+</style>
+
+<!-- ================================================= -->
+<!-- 🖼️ HERRAMIENTAS DE IMAGEN — SEO H2 -->
+<!-- ================================================= -->
+<h2 class="section-title">🖼️ Herramientas de Imagen — Convertir, Redimensionar y Optimizar</h2>
+
+<div class="dashboard-grid">
+    <a class="tool-card-neo cyan-image" href="{{ url_for('image_to_jpg') }}" aria-label="Convertir imagen a JPG">
+        <i class="ri-image-2-line tool-icon"></i>
+        <div class="tool-title">Imagen a JPG</div>
+        <div class="tool-desc">Convierte PNG, WEBP o HEIC a JPG.</div>
+    </a>
+
+    <a class="tool-card-neo cyan-image" href="{{ url_for('image_to_png') }}" aria-label="Convertir imagen a PNG">
+        <i class="ri-file-image-line tool-icon"></i>
+        <div class="tool-title">Imagen a PNG</div>
+        <div class="tool-desc">Transforma imágenes a PNG.</div>
+    </a>
+
+    <a class="tool-card-neo cyan-image" href="{{ url_for('image_to_icon') }}" aria-label="Convertir imagen a ícono">
+        <i class="ri-file-shield-2-line tool-icon"></i>
+        <div class="tool-title">Imagen a Ícono</div>
+        <div class="tool-desc">Genera iconos .ico fácilmente.</div>
+    </a>
+
+    <a class="tool-card-neo cyan-image" href="{{ url_for('remove_background') }}" aria-label="Quitar fondo de imagen">
+        <i class="ri-scissors-2-line tool-icon"></i>
+        <div class="tool-title">Quitar Fondo</div>
+        <div class="tool-desc">Elimina fondo automáticamente con IA.</div>
+    </a>
+
+    <a class="tool-card-neo cyan-image" href="{{ url_for('compress_image') }}" aria-label="Comprimir imagen online">
+        <i class="ri-contrast-drop-2-line tool-icon"></i>
+        <div class="tool-title">Comprimir Imagen</div>
+        <div class="tool-desc">Reduce el peso sin perder calidad.</div>
+    </a>
+
+    <a class="tool-card-neo cyan-image" href="{{ url_for('resize_image') }}" aria-label="Redimensionar imagen online">
+        <i class="ri-resize-width-line tool-icon"></i>
+        <div class="tool-title">Redimensionar Imagen</div>
+        <div class="tool-desc">Cambia tamaño manteniendo calidad.</div>
+    </a>
+
+    <a class="tool-card-neo cyan-image" href="{{ url_for('image_to_text') }}" aria-label="Extraer texto de imagen OCR">
+        <i class="ri-file-text-line tool-icon"></i>
+        <div class="tool-title">Imagen a Texto (OCR)</div>
+        <div class="tool-desc">Extrae texto de imágenes.</div>
+    </a>
+</div>
+
+
+<!-- ================================================= -->
+<!-- 📄 PDF — SEO H2 -->
+<!-- ================================================= -->
+<h2 class="section-title">📄 Herramientas PDF — Convertir, Unir, Dividir y Comprimir</h2>
+
+<div class="dashboard-grid">
+    <a class="tool-card-neo red-pdf" href="{{ url_for('pdf_to_word') }}">
+        <i class="ri-file-word-line tool-icon"></i>
+        <div class="tool-title">PDF a Word</div>
+        <div class="tool-desc">Convierte PDFs a DOCX editable.</div>
+    </a>
+
+    <a class="tool-card-neo blue-word" href="{{ url_for('word_to_pdf') }}">
+        <i class="ri-file-pdf-2-line tool-icon"></i>
+        <div class="tool-title">Word a PDF</div>
+        <div class="tool-desc">Convierte documentos a PDF.</div>
+    </a>
+
+    <a class="tool-card-neo red-pdf" href="{{ url_for('pdf_to_images') }}">
+        <i class="ri-image-edit-line tool-icon"></i>
+        <div class="tool-title">PDF a Imágenes</div>
+        <div class="tool-desc">Convierte páginas a fotos.</div>
+    </a>
+
+    <a class="tool-card-neo red-pdf" href="{{ url_for('merge_pdfs') }}">
+        <i class="ri-folder-merge-line tool-icon"></i>
+        <div class="tool-title">Unir PDFs</div>
+        <div class="tool-desc">Fusiona múltiples archivos.</div>
+    </a>
+
+    <a class="tool-card-neo green-excel" href="{{ url_for('pdf_ocr_excel') }}">
+        <i class="ri-table-line tool-icon"></i>
+        <div class="tool-title">PDF a Excel (OCR)</div>
+        <div class="tool-desc">Extrae tablas automáticamente con IA.</div>
+    </a>
+
+    <a class="tool-card-neo red-pdf" href="{{ url_for('pdf_split') }}">
+        <i class="ri-scissors-line tool-icon"></i>
+        <div class="tool-title">Dividir PDF</div>
+        <div class="tool-desc">Separa páginas o rangos.</div>
+    </a>
+
+    <a class="tool-card-neo red-pdf" href="{{ url_for('pdf_compress') }}">
+        <i class="ri-archive-line tool-icon"></i>
+        <div class="tool-title">Comprimir PDF</div>
+        <div class="tool-desc">Reduce tamaño manteniendo calidad.</div>
+    </a>
+
+    <a class="tool-card-neo red-pdf" href="{{ url_for('image_to_pdf') }}">
+        <i class="ri-archive-line tool-icon"></i>
+        <div class="tool-title">Imágenes a PDF</div>
+        <div class="tool-desc">Convierte fotos a un solo PDF.</div>
+    </a>
+</div>
+
+
+<!-- ================================================= -->
+<!-- 🎥 VIDEO — SEO H2 -->
+<!-- ================================================= -->
+<h2 class="section-title">🎥 Herramientas de Video — Optimizar y Convertir</h2>
+
+<div class="dashboard-grid">
+    <a class="tool-card-neo orange-video" href="{{ url_for('video_compress') }}">
+        <i class="ri-film-line tool-icon"></i>
+        <div class="tool-title">Comprimir Video</div>
+        <div class="tool-desc">Reduce peso sin perder calidad.</div>
+    </a>
+
+    <a class="tool-card-neo orange-video" href="{{ url_for('video_to_mp4') }}">
+        <i class="ri-video-line tool-icon"></i>
+        <div class="tool-title">Video a MP4</div>
+        <div class="tool-desc">Convierte cualquier formato a MP4.</div>
+    </a>
+
+    <a class="tool-card-neo gray-tools" href="{{ url_for('video_downloader') }}">
+        <i class="ri-download-cloud-2-line tool-icon"></i>
+        <div class="tool-title">Descargador Universal</div>
+        <div class="tool-desc">Bajá videos de cualquier sitio web.</div>
+    </a>
+</div>
+
+
+<!-- ================================================= -->
+<!-- 🎵 AUDIO — SEO H2 -->
+<!-- ================================================= -->
+<h2 class="section-title">🎵 Herramientas de Audio — Convertir y Limpiar</h2>
+
+<div class="dashboard-grid">
+    <a class="tool-card-neo purple-audio" href="{{ url_for('audio_converter') }}">
+        <i class="ri-music-2-line tool-icon"></i>
+        <div class="tool-title">Convertidor de Audio</div>
+        <div class="tool-desc">Convierte MP3, WAV, AAC, FLAC y más.</div>
+    </a>
+
+    <a class="tool-card-neo purple-audio" href="{{ url_for('vocal_remover') }}">
+        <i class="ri-voiceprint-line tool-icon"></i>
+        <div class="tool-title">Eliminador de Voz (IA)</div>
+        <div class="tool-desc">Separa instrumentos y voz.</div>
+    </a>
+</div>
+
+
+<!-- ================================================= -->
+<!-- 🔧 UTILIDADES — SEO H2 -->
+<!-- ================================================= -->
+<h2 class="section-title">🧰 Utilidades Online</h2>
+
+<div class="dashboard-grid">
+    <a class="tool-card-neo yellow-qr" href="{{ url_for('qr_generator') }}">
+        <i class="ri-qr-code-line tool-icon"></i>
+        <div class="tool-title">Generar QR</div>
+        <div class="tool-desc">Crea códigos QR personalizados.</div>
+    </a>
+
+    <a class="tool-card-neo gray-tools" href="{{ url_for('word_counter') }}">
+        <i class="ri-file-list-3-line tool-icon"></i>
+        <div class="tool-title">Contador de Palabras</div>
+        <div class="tool-desc">Cuenta palabras y caracteres.</div>
+    </a>
+
+    <a class="tool-card-neo gray-tools" href="{{ url_for('password_generator') }}">
+        <i class="ri-key-2-line tool-icon"></i>
+        <div class="tool-title">Generar Contraseñas</div>
+        <div class="tool-desc">Claves ultra seguras y aleatorias.</div>
+    </a>
+</div>
+
+{% endblock %}

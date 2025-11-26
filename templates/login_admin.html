@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 style="text-align:center; margin-top:20px; font-weight:800;">🔐 Acceso Administrador</h2>
+
+<div style="max-width:400px; margin:30px auto; background:white; padding:25px; border-radius:12px; 
+box-shadow:0 6px 18px rgba(0,0,0,0.15);">
+    
+    <form method="POST">
+
+        <label>Usuario</label>
+        <input type="text" name="usuario" required 
+        style="width:100%; padding:10px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc;">
+
+        <label>Contraseña</label>
+        <input type="password" name="password" required
+        style="width:100%; padding:10px; margin-bottom:20px; border-radius:8px; border:1px solid #ccc;">
+
+        <button type="submit"
+        style="width:100%; padding:12px; background:#4e6bff; color:#fff; 
+        border:none; border-radius:8px; font-size:16px; cursor:pointer;">
+            Ingresar
+        </button>
+
+    </form>
+</div>
+
+{% endblock %}

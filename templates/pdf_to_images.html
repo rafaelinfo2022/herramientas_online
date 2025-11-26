@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="glass-card p-5" style="max-width: 800px; width: 100%;">
+        
+        <h1 class="text-center mb-4 text-gradient">Convertir PDF a Imágenes JPG Online</h1>
+
+        <p class="text-center text-muted mb-4">
+            Subí tu PDF y transformá cada página en una imagen JPG de alta calidad. 
+            Conversión rápida, clara y totalmente online.
+        </p>
+
+
+        {% if images %}
+        <!-- RESULTADO -->
+        <div class="alert alert-success text-center animate-fade-in">
+            <h4 class="alert-heading">¡Conversión Exitosa! 📸</h4>
+
+            <div class="row row-cols-1 row-cols-md-3 g-4 mt-3">
+                {% for img in images %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0">
+                        <img src="{{ url_for('static', filename='generated/' ~ img) }}"
+                             class="card-img-top" style="object-fit: cover; height: 200px;">
+                        <div class="card-body text-center">
+                            <a href="{{ url_for('download_file', filename=img) }}"
+                               class="btn btn-primary btn-sm w-100">
+                               ⬇️ Descargar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <hr>
+            <a href="{{ url_for('pdf_to_images') }}" class="btn btn-outline-secondary btn-sm mt-2">
+                🔄 Convertir otro
+            </a>
+        </div>
+
+        {% else %}
+        <!-- FORMULARIO -->
+        <form id="pdfImgForm" action="" method="post" enctype="multipart/form-data">
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">1. Sube tu PDF</label>
+                <div id="drop-zone" class="drop-zone">
+                    <span class="drop-zone__prompt">
+                        📂 Arrastra tu PDF aquí o haz clic<br>
+                        <small class="text-muted">(Solo archivos PDF)</small>
+                    </span>
+                    <input type="file" name="file" class="drop-zone__input" accept="application/pdf" required>
+                </div>
+
+                <div id="file-info"
+                     class="mt-2 text-center text-primary fw-bold d-none"></div>
+            </div>
+
+            <button class="btn btn-gradient w-100 py-3 fw-bold shadow-sm" type="submit" id="submitBtn">
+                🖼️ Convertir a Imágenes
+            </button>
+
+            <!-- Progreso -->
+            <div id="progress-container" style="display:none; margin-top:20px;">
+                <p id="progress-text">Preparando...</p>
+
+                <div style="width:100%; background:#ddd; height:8px; border-radius:5px;">
+                    <div id="progress-bar"
+                         style="width:0%; height:8px; background:#1a73e8; border-radius:5px;"></div>
+                </div>
+
+                <p id="progress-percent">0%</p>
+            </div>
+
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+/* DRAG & DROP */
+const dropZone = document.getElementById("drop-zone");
+const fileInput = dropZone.querySelector(".drop-zone__input");
+const fileInfo = document.getElementById("file-info");
+
+dropZone.addEventListener("click", () => fileInput.click());
+
+fileInput.addEventListener("change", () => {
+    if (fileInput.files.length) {
+        fileInfo.textContent = `📄 ${fileInput.files[0].name}`;
+        fileInfo.classList.remove("d-none");
+    }
+});
+
+dropZone.addEventListener("dragover", e => {
+    e.preventDefault();
+    dropZone.classList.add("drop-zone--over");
+});
+
+dropZone.addEventListener("dragleave", () => {
+    dropZone.classList.remove("drop-zone--over");
+});
+
+dropZone.addEventListener("drop", e => {
+    e.preventDefault();
+    if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        fileInfo.textContent = `📄 ${fileInput.files[0].name}`;
+        fileInfo.classList.remove("d-none");
+    }
+    dropZone.classList.remove("drop-zone--over");
+});
+
+/* PROGRESO */
+const form = document.getElementById("pdfImgForm");
+const progressContainer = document.getElementById("progress-container");
+const progressBar = document.getElementById("progress-bar");
+const progressPercent = document.getElementById("progress-percent");
+const progressText = document.getElementById("progress-text");
+const submitBtn = document.getElementById("submitBtn");
+
+form.addEventListener("submit", e => {
+    if (fileInput.files.length === 0) {
+        e.preventDefault();
+        alert("Debes subir un PDF primero.");
+        return;
+    }
+
+    progressContainer.style.display = "block";
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = "🔄 Procesando...";
+    progressText.textContent = "Generando imágenes...";
+
+    let width = 0;
+    const interval = setInterval(() => {
+        width += Math.random() * 20;
+        if (width > 90) width = 90;
+        progressBar.style.width = width + "%";
+        progressPercent.textContent = Math.round(width) + "%";
+    }, 200);
+});
+</script>
+
+{% endblock %}

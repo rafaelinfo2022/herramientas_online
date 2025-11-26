@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1 class="text-center mb-4 text-gradient">Separar Voces e Instrumental Online (IA)</h1>
+
+<p class="text-center text-muted mb-4">
+    Separá la voz y la música de cualquier canción utilizando inteligencia artificial avanzada. 
+    Obtené la pista vocal o instrumental por separado.
+</p>
+
+
+{% if vocals_file and accompaniment_file %}
+<div class="alert alert-success text-center animate-fade-in">
+    <h4 class="alert-heading">¡Separación Completada! 🎧</h4>
+    <p>Aquí tienes tus pistas separadas:</p>
+
+    <div class="d-grid gap-2">
+        <a href="{{ url_for('download_file', filename=accompaniment_file) }}" class="btn btn-primary shadow-sm">
+            🎹 Descargar Instrumental (Música)
+        </a>
+        <a href="{{ url_for('download_file', filename=vocals_file) }}" class="btn btn-outline-primary shadow-sm">
+            🎤 Descargar Vocales (Voz)
+        </a>
+    </div>
+
+    <hr>
+    <a href="{{ url_for('vocal_remover') }}" class="btn btn-outline-secondary btn-sm mt-2">
+        🔄 Procesar otra canción
+    </a>
+</div>
+
+{% else %}
+
+<form id="convertForm" action="/vocal_remover" method="POST" enctype="multipart/form-data">
+
+    <!-- Drag & Drop Zone -->
+    <div class="mb-4">
+        <label class="form-label fw-bold">Sube tu canción (MP3, WAV, FLAC)</label>
+        <div id="drop-zone" class="drop-zone">
+            <span class="drop-zone__prompt">
+                📂 Arrastra tu archivo aquí o haz clic para subir<br>
+                <small class="text-muted">(Máx 100MB recomendado)</small>
+            </span>
+            <input type="file" name="audio_file" class="drop-zone__input" required>
+        </div>
+        <div id="file-info" class="mt-2 text-center text-primary fw-bold d-none"></div>
+    </div>
+
+    <!-- Botón -->
+    <button class="btn btn-gradient w-100 py-3 fw-bold shadow-sm" type="submit" id="submitBtn">
+        ✨ Separar Pistas con IA
+    </button>
+
+    <!-- PROGRESO -->
+    <div id="progress-container" style="display: none; margin-top: 20px;">
+        <p id="progress-text">Preparando...</p>
+
+        <div style="width: 100%; background: #ddd; height: 8px; border-radius: 5px;">
+            <div id="progress-bar" style="width: 0%; height: 8px; background: #1a73e8; border-radius: 5px;"></div>
+        </div>
+
+        <p id="progress-percent">0%</p>
+    </div>
+
+</form>
+
+{% endif %}
+
+<script>
+    // --- Drag & Drop lógica ---
+    const dropZone = document.getElementById("drop-zone");
+    const inputElement = dropZone.querySelector(".drop-zone__input");
+    const fileInfo = document.getElementById("file-info");
+    const form = document.getElementById("convertForm");
+    const submitBtn = document.getElementById("submitBtn");
+
+    if (dropZone) {
+        dropZone.addEventListener("click", () => inputElement.click());
+
+        inputElement.addEventListener("change", () => {
+            if (inputElement.files.length) updateThumbnail(inputElement.files[0]);
+        });
+
+        dropZone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dropZone.classList.add("drop-zone--over");
+        });
+
+        ["dragleave", "dragend"].forEach(type => {
+            dropZone.addEventListener(type, () => dropZone.classList.remove("drop-zone--over"));
+        });
+
+        dropZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files.length) {
+                inputElement.files = e.dataTransfer.files;
+                updateThumbnail(e.dataTransfer.files[0]);
+            }
+            dropZone.classList.remove("drop-zone--over");
+        });
+    }
+
+    function updateThumbnail(file) {
+        fileInfo.textContent = `📄 Archivo seleccionado: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+        fileInfo.classList.remove("d-none");
+        dropZone.classList.add("drop-zone--uploaded");
+    }
+
+    // PROGRESO
+    if (form) {
+        form.addEventListener("submit", () => {
+            document.getElementById("progress-container").style.display = "block";
+            const progressBar = document.getElementById("progress-bar");
+            const progressPercent = document.getElementById("progress-percent");
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = "🔄 Procesando con IA...";
+            document.getElementById("progress-text").textContent = "Analizando audio con IA...";
+
+            let width = 0;
+            setInterval(() => {
+                if (width < 95) {
+                    width += 0.5;
+                    progressBar.style.width = width + "%";
+                    progressPercent.textContent = Math.round(width) + "%";
+                }
+            }, 500);
+        });
+    }
+</script>
+
+{% endblock %}

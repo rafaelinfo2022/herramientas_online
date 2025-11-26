@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+
+<a href="{{ url_for('admin_logout') }}" style="float:right;">Cerrar sesión</a>
+<h2 style="text-align:center; font-weight:800;">📨 Mensajes Recibidos</h2>
+
+<div style="max-width:800px; margin: 20px auto;">
+    {% for c in comentarios %}
+    <div style="background:#fff; padding:15px; margin-bottom:15px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1); 
+                border-left: 6px solid {% if c.leido %}#4caf50{% else %}#ff9800{% endif %};">
+
+        <p><strong>📅 Fecha:</strong> {{ c.fecha }}</p>
+        <p><strong>👤 Nombre:</strong> {{ c.nombre or "No indicado" }}</p>
+        <p><strong>📧 Email:</strong> {{ c.email or "No indicado" }}</p>
+        <p><strong>💬 Mensaje:</strong><br> {{ c.mensaje }}</p>
+
+        <div style="margin-top:10px;">
+            {% if not c.leido %}
+            <a href="{{ url_for('marcar_leido', msg_id=c.id) }}" 
+            style="background:#ffc107; padding:6px 12px; border-radius:6px; color:black; text-decoration:none; margin-right:10px;">
+                ✔ Marcar leído
+            </a>
+            {% endif %}
+
+            <a href="{{ url_for('eliminar_mensaje', msg_id=c.id) }}" 
+            style="background:#f44336; padding:6px 12px; border-radius:6px; color:white; text-decoration:none;"
+            onclick="return confirm('¿Seguro que querés eliminar este mensaje?');">
+                🗑 Eliminar
+            </a>
+        </div>
+
+    </div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

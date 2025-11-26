@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="glass-card p-5" style="max-width: 600px; width: 100%;">
+
+        <h1 class="text-center mb-4 text-gradient">Unir Archivos PDF Online</h1>
+
+        <p class="text-center text-muted mb-4">
+            Combiná dos o más archivos PDF en un solo documento de manera rápida, gratuita y online. Ideal para unificar informes, documentos escaneados o páginas sueltas.
+        </p>
+
+
+        {% if download_file %}
+        <!-- RESULTADO -->
+        <div class="alert alert-success text-center animate-fade-in">
+            <h4 class="alert-heading">¡PDFs Unidos! 🔗</h4>
+            <p>Tu archivo combinado está listo.</p>
+
+            <a href="{{ url_for('download_file', filename=download_file) }}"
+               class="btn btn-success btn-lg mt-2 shadow-sm">
+                ⬇️ Descargar PDF Unido
+            </a>
+
+            <hr>
+
+            <a href="{{ url_for('merge_pdfs') }}" class="btn btn-outline-secondary btn-sm">
+                🔄 Unir otros PDFs
+            </a>
+        </div>
+
+        {% else %}
+
+        <!-- FORMULARIO -->
+        <form id="mergeForm" action="" method="post" enctype="multipart/form-data">
+
+            <!-- DRAG & DROP -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">1. Sube tus PDFs</label>
+
+                <div id="drop-zone" class="drop-zone">
+                    <span class="drop-zone__prompt">
+                        📂 Arrastra tus archivos aquí o haz clic <br>
+                        <small class="text-muted">(Seleccioná múltiples archivos PDF)</small>
+                    </span>
+                    <input type="file" name="files" id="fileInput" class="drop-zone__input"
+                           accept="application/pdf" multiple required>
+                </div>
+
+                <div id="file-info" class="mt-2 text-center text-primary fw-bold d-none"></div>
+            </div>
+
+            <!-- BOTÓN -->
+            <button id="submitBtn" class="btn btn-gradient w-100 py-3 fw-bold shadow-sm" type="submit">
+                🔗 Unir PDFs Ahora
+            </button>
+
+            <!-- PROGRESO -->
+            <div id="progress-container" style="display: none; margin-top: 20px;">
+                <p id="progress-text">Preparando...</p>
+
+                <div style="width: 100%; background: #ddd; height: 8px; border-radius: 5px;">
+                    <div id="progress-bar"
+                         style="width: 0%; height: 8px; background: #1a73e8; border-radius: 5px;">
+                    </div>
+                </div>
+
+                <p id="progress-percent">0%</p>
+            </div>
+
+        </form>
+
+        {% endif %}
+    </div>
+</div>
+
+
+<!-- ================= JS DRAG & DROP ================= -->
+<script>
+const dropZone = document.getElementById("drop-zone");
+const fileInput = document.getElementById("fileInput");
+const fileInfo = document.getElementById("file-info");
+
+dropZone.addEventListener("click", () => fileInput.click());
+
+fileInput.addEventListener("change", () => {
+    if (fileInput.files.length > 0) updateFileList(fileInput.files);
+});
+
+dropZone.addEventListener("dragover", e => {
+    e.preventDefault();
+    dropZone.classList.add("drop-zone--over");
+});
+
+["dragleave", "dragend"].forEach(type =>
+    dropZone.addEventListener(type, () => dropZone.classList.remove("drop-zone--over"))
+);
+
+dropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.files.length > 0) {
+        fileInput.files = e.dataTransfer.files;
+        updateFileList(e.dataTransfer.files);
+    }
+    dropZone.classList.remove("drop-zone--over");
+});
+
+function updateFileList(files) {
+    fileInfo.innerHTML =
+        `📄 <strong>${files.length} archivos seleccionados:</strong><br>`
+        + Array.from(files).map(f => f.name).join("<br>");
+
+    fileInfo.classList.remove("d-none");
+}
+</script>
+
+
+<!-- ================= JS PROGRESO ================= -->
+<script>
+const form = document.getElementById("mergeForm");
+const progressContainer = document.getElementById("progress-container");
+const progressBar = document.getElementById("progress-bar");
+const progressPercent = document.getElementById("progress-percent");
+const progressText = document.getElementById("progress-text");
+const submitBtn = document.getElementById("submitBtn");
+
+progressContainer.style.display = "none";
+
+form.addEventListener("submit", (event) => {
+
+    // Validación: mínimo 2 PDFs
+    if (fileInput.files.length < 2) {
+        alert("Debes seleccionar al menos dos archivos PDF.");
+        event.preventDefault();
+        return;
+    }
+
+    // Mostrar barra
+    progressContainer.style.display = "block";
+    progressBar.style.width = "0%";
+    progressPercent.textContent = "0%";
+    progressText.textContent = "Uniendo documentos...";
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = "🔄 Procesando...";
+
+    let width = 0;
+
+    const interval = setInterval(() => {
+        if (width >= 90) {
+            clearInterval(interval);
+        } else {
+            width += Math.random() * 20;
+            if (width > 90) width = 90;
+
+            progressBar.style.width = width + "%";
+            progressPercent.textContent = Math.round(width) + "%";
+        }
+    }, 220);
+});
+</script>
+
+{% endblock %}

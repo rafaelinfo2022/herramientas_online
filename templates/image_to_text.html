@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="glass-card p-5" style="max-width:700px; width:100%;">
+
+        <h2 class="text-center mb-4 text-gradient">📄 Convertir Imagen a Texto (OCR)</h2>
+
+        <!-- SEO -->
+        <p class="text-center text-muted mb-4">
+            Extraé texto de imágenes automáticamente con OCR avanzado. Compatible con JPG, PNG, WebP y más.
+        </p>
+
+        {% if error_message %}
+        <div class="alert alert-danger text-center">
+            {{ error_message }}
+        </div>
+        {% endif %}
+
+        {% if extracted_text %}
+        <div class="alert alert-success animate-fade-in">
+            <h4 class="alert-heading">¡Texto extraído correctamente! ✨</h4>
+
+            <textarea class="form-control mt-3" rows="10">{{ extracted_text }}</textarea>
+
+            <a href="{{ url_for('image_to_text') }}" class="btn btn-outline-secondary btn-sm mt-3">
+                🔄 Procesar otra imagen
+            </a>
+        </div>
+        {% else %}
+
+        <!-- FORMULARIO -->
+        <form method="POST" enctype="multipart/form-data">
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">1. Subí tu imagen</label>
+                <input type="file" class="form-control" name="file" accept="image/*" required>
+            </div>
+
+            <button class="btn btn-gradient w-100 py-3 fw-bold shadow-sm" type="submit">
+                🔍 Extraer Texto
+            </button>
+        </form>
+
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

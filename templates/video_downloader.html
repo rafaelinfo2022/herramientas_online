@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="glass-card p-5" style="max-width: 600px; width: 100%;">
+        <h1 class="text-center mb-4 text-gradient">Descargar Videos Online (YouTube, Facebook, Instagram)</h1>
+
+        <p class="text-center text-muted mb-4">
+            Bajá videos o audios de múltiples plataformas de forma rápida y sencilla. 
+            Compatible con YouTube, Facebook, Instagram y más.
+        </p>
+
+
+        {% if not FFMPEG_AVAILABLE %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i>
+            <strong>Nota:</strong> FFmpeg no detectado. La calidad podría limitarse.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+        {% endif %}
+
+        <p class="text-center text-muted mb-4">
+            Descarga videos o audio de YouTube, Facebook, Instagram y más.
+        </p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
+            role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <form id="downloadForm" method="POST" action="{{ url_for('video_downloader') }}">
+
+            <!-- URL Input -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">1. Pegá el enlace aquí</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-link-45deg"></i></span>
+                    <input type="url" class="form-control border-start-0 ps-0" id="url" name="url"
+                        placeholder="https://..." required>
+                </div>
+            </div>
+
+            <!-- Format Selection -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">2. Formato</label>
+                <div class="d-flex justify-content-center gap-3">
+                    <input type="radio" class="btn-check" name="format" id="formatVideo" value="video" checked>
+                    <label class="btn btn-outline-primary w-50" for="formatVideo">🎬 Video (MP4)</label>
+
+                    <input type="radio" class="btn-check" name="format" id="formatAudio" value="audio">
+                    <label class="btn btn-outline-primary w-50" for="formatAudio">🎵 Audio (MP3)</label>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button class="btn btn-gradient w-100 py-3 fw-bold shadow-sm" type="submit" id="btnDownload">
+                ⬇️ Descargar
+            </button>
+
+            <!-- Loader -->
+            <div id="loader" class="text-center mt-4" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2 text-muted">Procesando descarga... esto puede tardar unos segundos.</p>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById("downloadForm").addEventListener("submit", function () {
+        const btn = document.getElementById("btnDownload");
+        const loader = document.getElementById("loader");
+
+        if (btn && loader) {
+            btn.disabled = true;
+            btn.innerHTML = '⬇️ Iniciando...';
+            loader.style.display = "block";
+        }
+    });
+</script>
+{% endblock %}

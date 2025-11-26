@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="glass-card p-5" style="max-width: 600px; width: 100%;">
+
+        <h1 class="text-center mb-4 text-gradient">Dividir PDF Online por Páginas</h1>
+
+        <p class="text-center text-muted mb-4">
+            Extraé páginas individuales o rangos completos de tu archivo PDF. 
+            Dividí tus documentos fácil, rápido y sin instalar programas.
+        </p>
+
+
+        {% if files %}
+
+        <!-- RESULTADO -->
+        <div class="alert alert-success text-center animate-fade-in">
+            <h4 class="alert-heading">¡División Completada! ✂️</h4>
+            <p>Aquí tienes tus archivos divididos:</p>
+
+            <div class="d-grid gap-2" style="max-height: 300px; overflow-y: auto;">
+                {% for file in files %}
+                <a href="{{ url_for('download_file', filename=file) }}" class="btn btn-outline-primary btn-sm text-start">
+                    ⬇️ Descargar {{ file }}
+                </a>
+                {% endfor %}
+            </div>
+
+            <hr>
+            <a href="{{ url_for('pdf_split') }}" class="btn btn-secondary btn-sm mt-2">🔄 Dividir otro</a>
+        </div>
+
+        {% else %}
+
+        <!-- FORMULARIO -->
+        <form id="splitForm" method="post" enctype="multipart/form-data">
+
+            <!-- DRAG & DROP -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">1. Sube tu PDF</label>
+                <div id="drop-zone" class="drop-zone">
+                    <span class="drop-zone__prompt">
+                        📂 Arrastra tu PDF aquí o haz clic<br>
+                        <small class="text-muted">(Solo archivos PDF)</small>
+                    </span>
+                    <input type="file" name="file" class="drop-zone__input" accept="application/pdf" required>
+                </div>
+                <div id="file-info" class="mt-2 text-center text-primary fw-bold d-none"></div>
+            </div>
+
+            <!-- SELECCIÓN DE MODO -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">2. Método de división</label>
+                <select class="form-select" name="mode" id="mode" onchange="togglePages()">
+                    <option value="all">Extraer todas las páginas (1 PDF por página)</option>
+                    <option value="custom">Extraer páginas específicas</option>
+                </select>
+            </div>
+
+            <div id="pagesInput" class="mb-4" style="display:none;">
+                <label class="form-label fw-bold">Páginas específicas</label>
+                <input type="text" class="form-control" name="pages" placeholder="Ej: 1,3,5-7,10">
+                <small class="text-muted">Usa comas y rangos con guiones.</small>
+            </div>
+
+            <!-- BOTÓN -->
+            <button class="btn btn-gradient w-100 py-3 fw-bold shadow-sm" type="submit" id="submitBtn">
+                ✂️ Dividir PDF Ahora
+            </button>
+
+            <!-- PROGRESO -->
+            <div id="progress-container" style="display: none; margin-top: 20px;">
+                <p id="progress-text">Preparando...</p>
+                <div style="width: 100%; background: #ddd; height: 8px; border-radius: 5px;">
+                    <div id="progress-bar" style="width: 0%; height: 8px; background: #1a73e8; border-radius: 5px;"></div>
+                </div>
+                <p id="progress-percent">0%</p>
+            </div>
+
+        </form>
+
+        {% endif %}
+    </div>
+</div>
+
+<!-- JS -->
+<script>
+function togglePages() {
+    const mode = document.getElementById("mode").value;
+    const pagesInput = document.getElementById("pagesInput");
+    pagesInput.style.display = (mode === "custom") ? "block" : "none";
+}
+
+const dropZone = document.getElementById("drop-zone");
+const inputElement = dropZone.querySelector(".drop-zone__input");
+const fileInfo = document.getElementById("file-info");
+const form = document.getElementById("splitForm");
+const submitBtn = document.getElementById("submitBtn");
+
+dropZone.addEventListener("click", () => inputElement.click());
+dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("drop-zone--over"); });
+["dragleave", "dragend"].forEach(type => dropZone.addEventListener(type, () => dropZone.classList.remove("drop-zone--over")));
+
+dropZone.addEventListener("drop", e => {
+    e.preventDefault();
+    if (e.dataTransfer.files.length) {
+        inputElement.files = e.dataTransfer.files;
+        updateThumbnail(inputElement.files[0]);
+    }
+    dropZone.classList.remove("drop-zone--over");
+});
+
+function updateThumbnail(file) {
+    fileInfo.textContent = `📄 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+    fileInfo.classList.remove("d-none");
+}
+
+form.addEventListener("submit", () => {
+    const progressContainer = document.getElementById("progress-container");
+    const progressBar = document.getElementById("progress-bar");
+    const progressPercent = document.getElementById("progress-percent");
+
+    progressContainer.style.display = "block";
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = "🔄 Procesando...";
+    document.getElementById("progress-text").textContent = "Dividiendo documento...";
+
+    let width = 0;
+    const interval = setInterval(() => {
+        if (width >= 90) clearInterval(interval);
+        width += Math.random() * 15;
+        if (width > 90) width = 90;
+        progressBar.style.width = width + "%";
+        progressPercent.textContent = Math.round(width) + "%";
+    }, 250);
+});
+</script>
+
+{% endblock %}

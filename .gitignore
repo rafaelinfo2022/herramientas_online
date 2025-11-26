@@ -1,0 +1,23 @@
+# Entorno virtual
+entorno/
+venv/
+env/
+
+# Variables sensibles
+.env
+
+# Archivos temporales
+static/generated/
+static/uploads/
+static/tmp_downloads/
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+debug_*.txt
+demucs_wrapper_log.txt
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db

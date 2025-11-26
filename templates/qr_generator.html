@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="glass-card p-5" style="max-width: 600px; width: 100%;">
+        <h1 class="text-center mb-4 text-gradient">Generador de Códigos QR Online</h1>
+
+        <p class="text-center text-muted mb-4">
+            Creá tu código QR al instante ingresando una URL, texto, número o cualquier dato. 
+            Descargá tu QR en alta calidad.
+        </p>
+
+
+        <form method="post">
+            <div class="mb-4">
+                <label class="form-label fw-bold">Contenido del QR</label>
+                <textarea class="form-control" name="text" rows="3" placeholder="https://tu-sitio.com o Texto libre"
+                    required></textarea>
+            </div>
+
+            <button class="btn btn-gradient w-100 py-3 fw-bold shadow-sm" type="submit">
+                🔳 Generar Código QR
+            </button>
+        </form>
+
+        {% if image_file %}
+        <div class="alert alert-success text-center mt-4 animate-fade-in">
+            <h4 class="alert-heading">¡QR Listo! 🏁</h4>
+            <div class="bg-white p-3 d-inline-block rounded mb-3 shadow-sm">
+                <img src="{{ url_for('static', filename='generated/' ~ image_file) }}" alt="Código QR"
+                    style="max-width: 200px;">
+            </div>
+            <br>
+            <a href="{{ url_for('download_file', filename=image_file) }}" class="btn btn-success shadow-sm">
+                ⬇️ Descargar Imagen QR
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

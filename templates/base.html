@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- 🔥 SEO: META TAGS APLICADOS -->
+    <title>Herramientas Online — Convertir, Comprimir y Redimensionar Imágenes</title>
+
+    <meta name="description" content="Herramientas online para convertir imágenes, comprimir fotos, redimensionar, quitar fondo, convertir PDF, audio y video. Rápido, gratis y sin perder calidad.">
+    <meta name="keywords" content="convertir imagen, comprimir imagen, redimensionar imagen, png a jpg, jpg a png, quitar fondo, pdf a imagen, convertir archivos, herramientas online gratis">
+    <meta name="author" content="Herramientas Online">
+    <meta name="robots" content="index, follow">
+
+    <!-- VIEWPORT (ya estaba correcto) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Estilos globales -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+    <!-- ICONOS MODERNOS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css">
+
+    <link rel="icon" href="{{ url_for('static', filename='img/icons/favicon.png') }}">
+
+
+
+
+        <style>
+            html, body {
+                overflow-x: hidden !important;
+            }
+
+            /* ======================
+            NAVBAR MODERNO
+            ====================== */
+            header {
+                background: #1a73e8;
+                color: #fff;
+                padding: 12px 0;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+            }
+
+            /* Logo */
+            .header-content h1 a {
+                color: #fff;
+                text-decoration: none;
+                font-weight: 700;
+                font-size: 22px;
+            }
+
+            /* Contenedor del menú */
+            nav {
+                display: flex;
+                gap: 12px;
+                flex-wrap: wrap;
+                align-items: center;
+            }
+
+            nav a {
+                color: #fff;
+                text-decoration: none;
+                padding: 6px 10px;
+                border-radius: 6px;
+                font-size: 14px;
+                transition: 0.2s ease;
+                background: rgba(255,255,255,0.10);
+            }
+
+            nav a:hover {
+                background: rgba(255,255,255,0.25);
+            }
+
+            /* ======================
+            MENÚ HAMBURGUESA MOBILE
+            ====================== */
+            .menu-btn {
+                display: none;
+                font-size: 26px;
+                cursor: pointer;
+                color: white;
+            }
+
+            .mobile-nav {
+                display: none;
+                flex-direction: column;
+                gap: 12px;
+                background: #1666c9;
+                padding: 15px;
+                border-radius: 10px;
+                margin-top: 10px;
+            }
+
+            .mobile-nav a {
+                padding: 10px;
+                font-size: 15px;
+                background: rgba(255,255,255,0.18);
+            }
+
+            /* Mobile */
+            @media (max-width: 900px) {
+                nav {
+                    display: none;
+                }
+                .menu-btn {
+                    display: block;
+                }
+            }
+
+            /* ===============================
+            /* ===============================
+            MENÚ HORIZONTAL FULL COLOR
+            ================================ */
+            .apps-panel {
+                position: absolute;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: #ffffff;
+                padding: 25px;
+                border-bottom: 4px solid #1a73e8;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.13);
+                z-index: 999;
+                display: none;
+                border-radius: 0 0 15px 15px;
+            }
+
+            /* Mostrar */
+            .apps-panel.active {
+                display: block;
+            }
+
+            /* Grilla sin scroll */
+            .apps-panel.active {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 28px;
+            }
+
+            .apps-panel {
+                left: 0;
+                right: 0;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            /* Categoría */
+            .apps-group h4 {
+                font-size: 18px;
+                font-weight: 800;
+                margin-bottom: 12px;
+                color: #333;
+            }
+
+            /* Lista de ítems */
+            .apps-items {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            /* ITEM BASE */
+            .app-item {
+                padding: 14px;
+                border-radius: 14px;
+                color: #fff;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                text-decoration: none;
+                font-weight: 600;
+                box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+                transition: 0.25s ease;
+            }
+
+            .app-item i {
+                font-size: 26px;
+            }
+
+            /* Hover */
+            .app-item:hover {
+                transform: translateY(-6px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.25);
+            }
+
+            /* ============================
+            COLORES POR CATEGORÍA
+            ============================ */
+
+            /* IMÁGENES - celeste */
+            .color-image   { background: linear-gradient(135deg, #17a1cc, #43c8ff); }
+
+            /* PDF - rojo */
+            .color-pdf     { background: linear-gradient(135deg, #c41726, #ff4f63); }
+
+            /* VIDEO - naranja */
+            .color-video   { background: linear-gradient(135deg, #e87d22, #ffad54); }
+
+            /* AUDIO - violeta */
+            .color-audio   { background: linear-gradient(135deg, #8224c7, #c06aff); }
+
+            /* UTILIDADES - gris/azul suave */
+            .color-util    { background: linear-gradient(135deg, #4f5b6e, #7a889b); }
+
+            /* INICIO - azul */
+            .color-home    { background: linear-gradient(135deg, #1a73e8, #4d9fff); }
+
+
+        </style>
+    </head>
+
+    <body>
+    <header>
+        <div class="container header-content">
+
+            <!-- LOGO -->
+            <h1><a href="{{ url_for('index') }}">Herramientas Online</a></h1>
+            
+
+            {% if request.endpoint != 'index' %}
+
+            <!-- BOTÓN INICIO -->
+            <div class="menu-button start-btn">
+                <a href="{{ url_for('index') }}">
+                    <i class="ri-home-4-line"></i> Inicio
+                </a>
+            </div>
+
+            <!-- BOTÓN MENU -->
+            <div class="menu-button apps-btn" id="appsBtn">
+                <i class="ri-apps-2-line"></i> Menu
+            </div>
+
+            <!-- BOTÓN CONTACTO -->
+            <div class="menu-button start-btn">
+                <a href="{{ url_for('feedback') }}">
+                    <i class="ri-home-4-line"></i> Ayudanos a mejorar
+                </a>
+            </div>
+
+            {% endif %}
+        </div>
+
+        {% if request.endpoint != 'index' %}
+        <!-- ========================= -->
+        <!-- MENÚ HORIZONTAL FULL WIDTH -->
+        <!-- ========================= -->
+        <div class="apps-panel" id="appsPanel">
+
+        <!-- 🖼️ IMAGEN -->
+        <div class="apps-group">
+            <h4>🖼️ Imágenes</h4>
+            <div class="apps-items">
+                <a class="app-item color-image" href="{{ url_for('image_to_jpg') }}"><i class="ri-image-line"></i> IMG → JPG</a>
+                <a class="app-item color-image" href="{{ url_for('image_to_png') }}"><i class="ri-file-image-line"></i> IMG → PNG</a>
+                <a class="app-item color-image" href="{{ url_for('image_to_icon') }}"><i class="ri-file-shield-2-line"></i> IMG → Ícono</a>
+                <a class="app-item color-image" href="{{ url_for('remove_background') }}"><i class="ri-scissors-2-line"></i> Quitar Fondo</a>
+                <a class="app-item color-image" href="{{ url_for('compress_image') }}"><i class="ri-contrast-drop-2-line"></i> Comprimir IMG</a>
+                <a class="app-item color-image" href="{{ url_for('image_to_text') }}"><i class="ri-file-text-line"></i> Imagen → Texto</a>
+                <a class="app-item color-image" href="{{ url_for('resize_image') }}"><i class="ri-crop-line"></i> Redimensionar IMG</a>    
+            </div>
+        </div>
+
+        <!-- 📄 PDF -->
+        <div class="apps-group">
+            <h4>📄 PDF</h4>
+            <div class="apps-items">
+                <a class="app-item color-pdf" href="{{ url_for('pdf_to_word') }}"><i class="ri-file-word-line"></i> PDF → Word</a>
+                <a class="app-item color-home" href="{{ url_for('word_to_pdf') }}"><i class="ri-file-pdf-2-line"></i> Word → PDF</a>
+                <a class="app-item color-pdf" href="{{ url_for('pdf_to_images') }}"><i class="ri-image-edit-line"></i> PDF → IMG</a>
+                <a class="app-item color-pdf" href="{{ url_for('merge_pdfs') }}"><i class="ri-folder-merge-line"></i> Unir PDFs</a>
+                <a class="app-item color-pdf" href="{{ url_for('pdf_ocr_excel') }}"><i class="ri-table-line"></i> PDF → Excel OCR</a>
+                <a class="app-item color-pdf" href="{{ url_for('pdf_split') }}"><i class="ri-scissors-line"></i> Dividir PDF</a>
+                <a class="app-item color-pdf" href="{{ url_for('pdf_compress') }}"><i class="ri-archive-line"></i> Comprimir PDF</a>
+                <a class="app-item color-pdf" href="{{ url_for('image_to_pdf') }}"><i class="ri-archive-line"></i> IMG → PDF</a>
+            </div>
+        </div>
+
+        <!-- 🎥 VIDEO -->
+        <div class="apps-group">
+            <h4>🎥 Video</h4>
+            <div class="apps-items">
+                <a class="app-item color-video" href="{{ url_for('video_compress') }}"><i class="ri-film-line"></i> Comprimir Video</a>
+                <a class="app-item color-video" href="{{ url_for('video_to_mp4') }}"><i class="ri-video-line"></i> Video → MP4</a>
+                <a class="app-item color-video" href="{{ url_for('video_downloader') }}"><i class="ri-download-cloud-2-line"></i> Descargar Videos</a>
+            </div>
+        </div>
+
+        <!-- 🎵 AUDIO -->
+        <div class="apps-group">
+            <h4>🎵 Audio</h4>
+            <div class="apps-items">
+                <a class="app-item color-audio" href="{{ url_for('audio_converter') }}"><i class="ri-music-2-line"></i> Convertir Audio</a>
+                <a class="app-item color-audio" href="{{ url_for('vocal_remover') }}"><i class="ri-voiceprint-line"></i> Eliminar Voz</a>
+            </div>
+        </div>
+
+        <!-- 🧰 UTILIDADES -->
+        <div class="apps-group">
+            <h4>🧰 Utilidades</h4>
+            <div class="apps-items">
+                <a class="app-item color-util" href="{{ url_for('qr_generator') }}"><i class="ri-qr-code-line"></i> QR</a>
+                <a class="app-item color-util" href="{{ url_for('word_counter') }}"><i class="ri-file-list-3-line"></i> Palabras</a>
+                <a class="app-item color-util" href="{{ url_for('password_generator') }}"><i class="ri-key-line"></i> Contraseñas</a>
+            </div>
+        </div>
+
+    </div>
+
+
+
+        {% endif %}
+    </header>
+
+
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container" style="text-align: center;">
+            <p>© {{ 2025 }} Herramientas Online</p>
+        </div>
+    </footer>
+
+
+    <script>
+    const appsBtn = document.getElementById("appsBtn");
+    const appsPanel = document.getElementById("appsPanel");
+
+    if (appsBtn) {
+        appsBtn.addEventListener("click", () => {
+            appsPanel.classList.toggle("active");
+        });
+    }
+
+    // Cerrar al hacer clic fuera
+    document.addEventListener("click", (e) => {
+        if (!appsPanel.contains(e.target) && !appsBtn.contains(e.target)) {
+            appsPanel.classList.remove("active");
+        }
+    });
+    </script>
+
+
+    <script>
+        // Mostrar/Ocultar menú mobile
+        const toggle = document.getElementById("menuToggle");
+        const menu = document.getElementById("mobileMenu");
+
+        toggle.addEventListener("click", () => {
+            menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+        });
+    </script>
+
+    </body>
+    </html>

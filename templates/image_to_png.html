@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="glass-card p-5" style="max-width: 600px; width: 100%;">
+
+        <h1 class="text-center mb-4 text-gradient">Convertir Imagen a PNG Online</h1>
+
+        <p class="text-center text-muted mb-4">
+            Pasá tus imágenes JPG, WEBP o BMP a formato PNG de alta calidad. Conversión rápida, gratuita y compatible con todos los dispositivos.
+        </p>
+
+
+        {% if download_file %}
+        <!-- RESULTADO EXITOSO -->
+        <div class="alert alert-success text-center animate-fade-in">
+            <h4 class="alert-heading">¡Conversión Exitosa! 🎨</h4>
+
+            <div class="mb-3">
+                <img src="{{ url_for('static', filename='generated/' ~ download_file) }}"
+                    class="img-thumbnail shadow-sm" style="max-width: 200px;">
+            </div>
+
+            <a href="{{ url_for('download_file', filename=download_file) }}" class="btn btn-success btn-lg shadow-sm">⬇️
+                Descargar PNG</a>
+
+            <hr>
+            <a href="{{ url_for('image_to_png') }}" class="btn btn-outline-secondary btn-sm">🔄 Convertir otra</a>
+        </div>
+
+        {% else %}
+
+        <!-- FORMULARIO -->
+        <form id="pngForm" action="" method="post" enctype="multipart/form-data">
+
+            <!-- DRAG & DROP -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">1. Sube tu imagen</label>
+
+                <div id="drop-zone" class="drop-zone">
+                    <span class="drop-zone__prompt">
+                        📂 Arrastra tu imagen aquí o haz clic<br>
+                        <small class="text-muted">(Cualquier formato de imagen)</small>
+                    </span>
+                    <input type="file" name="file" id="fileInput" class="drop-zone__input" accept="image/*" required>
+                </div>
+
+                <div id="file-info" class="mt-2 text-center text-primary fw-bold d-none"></div>
+            </div>
+
+            <!-- BOTÓN -->
+            <button class="btn btn-gradient w-100 py-3 fw-bold shadow-sm" type="submit" id="submitBtn">
+                ✨ Convertir a PNG
+            </button>
+
+            <!-- PROGRESO (OCULTO AL INICIO) -->
+            <div id="progress-container" style="display: none; margin-top: 20px;">
+                <p id="progress-text">Preparando...</p>
+
+                <div style="width: 100%; background: #ddd; height: 8px; border-radius: 5px;">
+                    <div id="progress-bar" style="width: 0%; height: 8px; background: #1a73e8; border-radius: 5px;">
+                    </div>
+                </div>
+
+                <p id="progress-percent">0%</p>
+            </div>
+
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<!-- =============== JS DRAG & DROP =============== -->
+<script>
+    const dropZone = document.getElementById("drop-zone");
+    const fileInput = document.getElementById("fileInput");
+    const fileInfo = document.getElementById("file-info");
+
+    dropZone.addEventListener("click", () => fileInput.click());
+
+    fileInput.addEventListener("change", () => {
+        if (fileInput.files.length > 0) {
+            fileInfo.textContent = `📄 ${fileInput.files[0].name} (${(fileInput.files[0].size / 1024 / 1024).toFixed(2)} MB)`;
+            fileInfo.classList.remove("d-none");
+        }
+    });
+
+    ["dragover", "drop"].forEach(eventName => {
+        dropZone.addEventListener(eventName, e => e.preventDefault());
+    });
+
+    dropZone.addEventListener("drop", e => {
+        if (e.dataTransfer.files.length > 0) {
+            fileInput.files = e.dataTransfer.files;
+            fileInfo.textContent = `📄 ${fileInput.files[0].name} (${(fileInput.files[0].size / 1024 / 1024).toFixed(2)} MB)`;
+            fileInfo.classList.remove("d-none");
+        }
+    });
+</script>
+
+<!-- =============== JS PROGRESO =============== -->
+<script>
+    const form = document.getElementById("pngForm");
+    const progressContainer = document.getElementById("progress-container");
+    const progressBar = document.getElementById("progress-bar");
+    const progressPercent = document.getElementById("progress-percent");
+    const submitBtn = document.getElementById("submitBtn");
+
+    form.addEventListener("submit", (event) => {
+
+        if (fileInput.files.length === 0) {
+            alert("Debes subir una imagen antes de convertir.");
+            event.preventDefault();
+            return;
+        }
+
+        // Mostrar progreso
+        progressContainer.style.display = "block";
+        progressBar.style.width = "0%";
+        progressPercent.textContent = "0%";
+        document.getElementById("progress-text").textContent = "Convirtiendo...";
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = "🔄 Procesando...";
+
+        let width = 0;
+
+        const interval = setInterval(() => {
+            if (width >= 90) {
+                clearInterval(interval);
+            } else {
+                width += Math.random() * 15;
+                if (width > 90) width = 90;
+
+                progressBar.style.width = width + "%";
+                progressPercent.textContent = Math.round(width) + "%";
+            }
+        }, 200);
+    });
+</script>
+
+{% endblock %}

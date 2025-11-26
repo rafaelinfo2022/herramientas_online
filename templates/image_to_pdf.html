@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- 🔥 SEO: Título principal (H1) -->
+<h1 class="text-center mb-4 text-gradient">Convertir Imágenes a PDF Online</h1>
+
+<!-- 🔥 SEO: Descripción corta y optimizada -->
+<p class="text-center text-muted mb-4">
+    Unificá múltiples imágenes JPG, PNG o WEBP en un solo archivo PDF listo para imprimir, compartir o enviar. 
+    Rápido, gratis y totalmente online.
+</p>
+
+
+{% if download_file %}
+<div class="alert alert-success text-center animate-fade-in">
+    <h4 class="alert-heading">¡PDF Generado! 📄✨</h4>
+    <p>Tu archivo está listo para descargar.</p>
+
+    <a href="{{ url_for('download_image_to_pdf', folder=folder, filename=download_file) }}"
+       class="btn btn-success btn-lg mt-2 shadow-sm">
+        ⬇️ Descargar PDF
+    </a>
+
+    <hr>
+    <a href="{{ url_for('image_to_pdf') }}" class="btn btn-outline-secondary btn-sm">
+        🔄 Crear otro PDF
+    </a>
+</div>
+
+{% else %}
+
+<form id="pdfForm" method="POST" enctype="multipart/form-data">
+
+    <!-- Zona de carga -->
+    <div class="mb-4">
+        <label class="form-label fw-bold">1. Subí tus imágenes</label>
+        <div id="drop-zone" class="drop-zone">
+            <span class="drop-zone__prompt">
+                📂 Arrastrá tus imágenes aquí o hacé clic<br>
+                <small class="text-muted">(Podés subir varias a la vez)</small>
+            </span>
+            <input type="file" name="images" class="drop-zone__input" accept="image/*" multiple required>
+        </div>
+        <div id="file-info" class="mt-2 text-center text-primary fw-bold d-none"></div>
+    </div>
+
+    <!-- Botón -->
+    <button class="btn btn-gradient w-100 py-3 fw-bold shadow-sm" type="submit" id="submitBtn">
+        📄 Crear PDF
+    </button>
+
+    <!-- PROGRESO -->
+    <div id="progress-container" style="display:none; margin-top:20px;">
+        <p id="progress-text">Preparando...</p>
+
+        <div style="width:100%; background:#ddd; height:8px; border-radius:5px;">
+            <div id="progress-bar" style="width:0%; height:8px; background:#1a73e8; border-radius:5px;"></div>
+        </div>
+
+        <p id="progress-percent">0%</p>
+    </div>
+
+</form>
+
+{% endif %}
+</div>
+</div>
+
+<script>
+    const dropZone = document.getElementById("drop-zone");
+    const inputElement = dropZone.querySelector(".drop-zone__input");
+    const fileInfo = document.getElementById("file-info");
+    const form = document.getElementById("pdfForm");
+    const submitBtn = document.getElementById("submitBtn");
+
+    // Drag & Drop
+    dropZone.addEventListener("click", () => inputElement.click());
+
+    inputElement.addEventListener("change", () => {
+        if (inputElement.files.length) {
+            fileInfo.textContent = `📸 ${inputElement.files.length} imágenes seleccionadas`;
+            fileInfo.classList.remove("d-none");
+            dropZone.classList.add("drop-zone--uploaded");
+        }
+    });
+
+    dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("drop-zone--over");
+    });
+
+    ["dragleave", "dragend"].forEach(type => {
+        dropZone.addEventListener(type, () =>
+            dropZone.classList.remove("drop-zone--over"));
+    });
+
+    dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        if (e.dataTransfer.files.length) {
+            inputElement.files = e.dataTransfer.files;
+            fileInfo.textContent = `📸 ${inputElement.files.length} imágenes seleccionadas`;
+            fileInfo.classList.remove("d-none");
+            dropZone.classList.add("drop-zone--uploaded");
+        }
+        dropZone.classList.remove("drop-zone--over");
+    });
+
+    // Barra de Progreso
+    if (form) {
+        form.addEventListener("submit", function () {
+            document.getElementById("progress-container").style.display = "block";
+            const progressBar = document.getElementById("progress-bar");
+            const progressPercent = document.getElementById("progress-percent");
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = "🔄 Generando PDF...";
+
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 90) {
+                    clearInterval(interval);
+                } else {
+                    width += Math.random() * 15;
+                    if (width > 90) width = 90;
+
+                    progressBar.style.width = width + "%";
+                    progressPercent.textContent = Math.round(width) + "%";
+                }
+            }, 400);
+        });
+    }
+</script>
+
+{% endblock %}

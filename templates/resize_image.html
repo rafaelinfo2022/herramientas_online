@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1 class="text-center mb-4 text-gradient">Redimensionar Imagen Online</h1>
+
+<p class="text-center text-muted mb-4">
+    Cambiá el tamaño de tus imágenes manteniendo la calidad. 
+    Visualizá la vista previa antes de descargar.
+</p>
+
+
+<p class="text-center text-muted mb-4">
+    Cambiá el tamaño de tu imagen y visualizá el resultado antes de descargarla.
+</p>
+
+{% if download_file %}
+<div class="alert alert-success text-center animate-fade-in">
+    <h4 class="alert-heading">¡Imagen Redimensionada! 📐</h4>
+    <p>Tu imagen está lista.</p>
+
+    <img src="/static/generated/{{ download_file }}" 
+         class="img-fluid rounded shadow mb-3" 
+         style="max-width: 350px; display:block; margin:auto;">
+
+    <a href="{{ url_for('download_file', filename=download_file) }}" 
+       class="btn btn-success btn-lg shadow-sm">
+        ⬇️ Descargar Imagen
+    </a>
+
+    <hr>
+    <a href="{{ url_for('resize_image') }}" class="btn btn-outline-secondary btn-sm">
+        🔄 Redimensionar otra
+    </a>
+</div>
+
+{% else %}
+
+<form id="resizeForm" action="/resize-image" method="POST" enctype="multipart/form-data">
+
+    <!-- SUBIR -->
+    <div class="mb-4">
+        <label class="form-label fw-bold">1. Subí tu imagen</label>
+
+        <div id="drop-zone" class="drop-zone">
+            <span class="drop-zone__prompt">
+                📂 Arrastrá tu imagen aquí o hacé clic<br>
+                <small class="text-muted">(JPG, PNG, WEBP, etc.)</small>
+            </span>
+            <input type="file" name="file" class="drop-zone__input" accept="image/*" required>
+        </div>
+
+        <div id="file-info" class="mt-2 text-center fw-bold text-primary d-none"></div>
+    </div>
+
+    <!-- PREVIEW ORIGINAL + MEDIDAS -->
+    <div id="previewContainer" class="text-center mb-4 d-none">
+        <h5 class="fw-bold mb-2">Vista previa original</h5>
+        <img id="previewOriginal" class="rounded shadow" 
+             style="max-width: 350px; margin-bottom: 10px;">
+        <p id="dimensionsText" class="text-muted"></p>
+    </div>
+
+    <!-- NUEVAS MEDIDAS -->
+    <div class="row mb-4 d-none" id="resizeInputs">
+        <div class="col-md-6">
+            <label class="form-label fw-bold">Nuevo Ancho (px)</label>
+            <input type="number" class="form-control" id="newWidth" name="width" min="10" required>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label fw-bold">Nuevo Alto (px)</label>
+            <input type="number" class="form-control" id="newHeight" name="height" min="10" required>
+        </div>
+    </div>
+
+    <!-- VISTA PREVIA RESULTADO -->
+    <div id="previewResultContainer" class="text-center mb-4 d-none">
+        <h5 class="fw-bold mb-2">Vista previa redimensionada</h5>
+        <img id="previewResult" class="rounded shadow" style="max-width: 350px;">
+    </div>
+
+    <!-- BOTÓN -->
+    <button class="btn btn-gradient w-100 py-3 fw-bold shadow-sm d-none" 
+            id="submitBtn" type="submit">
+        📐 Redimensionar Imagen
+    </button>
+
+</form>
+
+{% endif %}
+
+</div>
+
+<script>
+    const dropZone = document.getElementById("drop-zone");
+    const inputEl = dropZone.querySelector(".drop-zone__input");
+    const previewOriginal = document.getElementById("previewOriginal");
+    const dimensionsText = document.getElementById("dimensionsText");
+    const previewContainer = document.getElementById("previewContainer");
+
+    const newWidth = document.getElementById("newWidth");
+    const newHeight = document.getElementById("newHeight");
+    const resizeInputs = document.getElementById("resizeInputs");
+
+    const previewResult = document.getElementById("previewResult");
+    const previewResultContainer = document.getElementById("previewResultContainer");
+
+    const submitBtn = document.getElementById("submitBtn");
+
+    dropZone.onclick = () => inputEl.click();
+
+    inputEl.addEventListener("change", () => handleImage());
+
+    function handleImage() {
+        const file = inputEl.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = e => {
+            previewOriginal.src = e.target.result;
+            previewOriginal.onload = () => {
+                const w = previewOriginal.naturalWidth;
+                const h = previewOriginal.naturalHeight;
+
+                // Mostrar medidas
+                dimensionsText.textContent = `Medidas actuales: ${w}px × ${h}px`;
+
+                // Prellenar inputs
+                newWidth.value = w;
+                newHeight.value = h;
+
+                previewContainer.classList.remove("d-none");
+                resizeInputs.classList.remove("d-none");
+                previewResultContainer.classList.remove("d-none");
+                submitBtn.classList.remove("d-none");
+
+                updatePreview();
+            };
+        };
+        reader.readAsDataURL(file);
+        document.getElementById("file-info").classList.remove("d-none");
+        document.getElementById("file-info").textContent = "Imagen cargada ✔️";
+    }
+
+    // Vista previa nueva
+    newWidth.addEventListener("input", updatePreview);
+    newHeight.addEventListener("input", updatePreview);
+
+    function updatePreview() {
+        const file = inputEl.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = e => {
+            previewResult.src = e.target.result;
+            previewResult.onload = () => {
+                previewResult.style.width = newWidth.value + "px";
+                previewResult.style.height = newHeight.value + "px";
+            };
+        };
+        reader.readAsDataURL(file);
+    }
+</script>
+
+{% endblock %}

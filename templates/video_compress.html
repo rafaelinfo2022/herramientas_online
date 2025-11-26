@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="glass-card p-5" style="max-width: 600px; width: 100%;">
+
+        <h1 class="text-center mb-4 text-gradient">Comprimir Video Online</h1>
+
+        <p class="text-center text-muted mb-4">
+            Reducí el peso de tus videos sin perder calidad. 
+            Ideal para WhatsApp, redes sociales y cargas rápidas.
+        </p>
+
+
+        {% if download_file %}
+
+        <div class="alert alert-success text-center animate-fade-in">
+            <h4 class="alert-heading">¡Compresión Exitosa! 🎬</h4>
+            <p>Tu video comprimido está listo.</p>
+            <a href="{{ url_for('download_file', filename=download_file) }}"
+               class="btn btn-success btn-lg mt-2 shadow-sm">⬇️ Descargar Video</a>
+            <hr>
+            <a href="{{ url_for('video_compress') }}" class="btn btn-outline-secondary btn-sm">🔄 Comprimir otro</a>
+        </div>
+
+        {% else %}
+
+        <form id="compressForm" method="post" enctype="multipart/form-data">
+
+            <!-- Drag & Drop -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">1. Sube tu video</label>
+                <div id="drop-zone" class="drop-zone">
+                    <span class="drop-zone__prompt">
+                        📂 Arrastra tu video aquí o haz clic<br>
+                        <small class="text-muted">(MP4, MOV, AVI, etc.)</small>
+                    </span>
+                    <input type="file" name="file" class="drop-zone__input" accept="video/*" required>
+                </div>
+                <div id="file-info" class="mt-2 text-center text-primary fw-bold d-none"></div>
+            </div>
+
+            <!-- Modo -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">2. Modo de Compresión</label>
+                <select class="form-select" name="preset" id="preset" onchange="toggleTarget()">
+                    <option value="medium" selected>Media (720p) - Balanceado</option>
+                    <option value="low">Alta Compresión (640p) - Ligero</option>
+                    <option value="high">Alta Calidad (1080p) - Nítido</option>
+                    <option value="whatsapp">WhatsApp (Máx 16MB)</option>
+                    <option value="reels">Instagram Reels (1080x1920)</option>
+                    <option value="tiktok">TikTok Optimizado</option>
+                    <option value="target">Tamaño Objetivo (MB)</option>
+                </select>
+            </div>
+
+            <!-- Custom Size -->
+            <div id="targetDiv" class="mb-4" style="display:none;">
+                <label class="form-label fw-bold">Tamaño final deseado (MB)</label>
+                <input type="number" class="form-control" name="target_size" min="1" max="1000" value="10">
+            </div>
+
+            <!-- Botón -->
+            <button class="btn btn-gradient w-100 py-3 fw-bold shadow-sm" type="submit" id="submitBtn">
+                📉 Comprimir Video
+            </button>
+
+            <!-- Progreso -->
+            <div id="progress-container" style="display: none; margin-top: 20px;">
+                <p id="progress-text">Preparando...</p>
+
+                <div style="width: 100%; background: #ddd; height: 8px; border-radius: 5px;">
+                    <div id="progress-bar"
+                         style="width: 0%; height: 8px; background: #1a73e8; border-radius: 5px;"></div>
+                </div>
+
+                <p id="progress-percent">0%</p>
+            </div>
+
+        </form>
+
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function toggleTarget() {
+        const preset = document.getElementById("preset").value;
+        document.getElementById("targetDiv").style.display = preset === "target" ? "block" : "none";
+    }
+
+    const dropZone = document.getElementById("drop-zone");
+    const inputElement = dropZone.querySelector(".drop-zone__input");
+    const fileInfo = document.getElementById("file-info");
+    const form = document.getElementById("compressForm");
+    const submitBtn = document.getElementById("submitBtn");
+
+    if (dropZone) {
+        dropZone.addEventListener("click", () => inputElement.click());
+        inputElement.addEventListener("change", () => {
+            if (inputElement.files.length) updateThumbnail(inputElement.files[0]);
+        });
+        dropZone.addEventListener("dragover", (e) => {
+            e.preventDefault(); dropZone.classList.add("drop-zone--over");
+        });
+        ["dragleave", "dragend"].forEach(type =>
+            dropZone.addEventListener(type, () => dropZone.classList.remove("drop-zone--over"))
+        );
+        dropZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files.length) {
+                inputElement.files = e.dataTransfer.files;
+                updateThumbnail(e.dataTransfer.files[0]);
+            }
+            dropZone.classList.remove("drop-zone--over");
+        });
+    }
+
+    function updateThumbnail(file) {
+        fileInfo.textContent = `🎬 ${file.name} (${(file.size/1024/1024).toFixed(2)} MB)`;
+        fileInfo.classList.remove("d-none");
+        dropZone.classList.add("drop-zone--uploaded");
+    }
+
+    if (form) {
+        form.addEventListener("submit", function () {
+            document.getElementById("progress-container").style.display = "block";
+            const progressBar = document.getElementById("progress-bar");
+            const progressPercent = document.getElementById("progress-percent");
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = "🔄 Procesando...";
+            document.getElementById("progress-text").textContent = "Comprimiendo video...";
+
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 95) return;
+                width += Math.random() * 2;
+                progressBar.style.width = width + "%";
+                progressPercent.textContent = Math.round(width) + "%";
+            }, 1000);
+        });
+    }
+</script>
+
+{% endblock %}
