@@ -1,4 +1,4 @@
-# Entorno virtual
+# Entornos virtuales
 entorno/
 venv/
 env/
@@ -7,9 +7,13 @@ env/
 .env
 
 # Archivos temporales
-static/generated/
+uploads/
 static/uploads/
+static/generated/
 static/tmp_downloads/
+tmp_downloads/
+
+# Cache de Python
 __pycache__/
 *.pyc
 
@@ -18,6 +22,6 @@ __pycache__/
 debug_*.txt
 demucs_wrapper_log.txt
 
-# Archivos de sistema
+# Archivos del sistema
 .DS_Store
 Thumbs.db
