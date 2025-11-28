@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="max-width:900px;margin:30px auto;background:#fff;padding:30px;
+            border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+
+    <h1 style="font-size:32px;font-weight:800;margin-bottom:15px;">
+        Sobre Nosotros
+    </h1>
+
+    <p style="font-size:17px;line-height:1.6;color:#444;">
+        Bienvenido a <strong><a href="http://convertilio.cloud">convertilio.cloud</a></strong>, una plataforma diseñada para simplificar
+        el trabajo diario con imágenes, documentos, archivos PDF, audio y video. Nuestro objetivo
+        es ofrecer herramientas rápidas, precisas y completamente gratuitas para realizar
+        conversiones, compresiones, ediciones y procesos con inteligencia artificial.
+    </p>
+
+    <h2 style="margin-top:25px;font-size:24px;font-weight:700;">¿Qué hacemos?</h2>
+    <p style="font-size:17px;line-height:1.6;">
+        Desarrollamos aplicaciones web que permiten convertir imágenes, comprimir archivos, extraer
+        texto de fotos, editar PDFs, eliminar fondos, generar códigos QR, transformar audios, 
+        descargar contenido y mucho más, todo desde cualquier dispositivo sin necesidad de 
+        instalar programas.
+    </p>
+
+    <h2 style="margin-top:25px;font-size:24px;font-weight:700;">Nuestra misión</h2>
+    <p style="font-size:17px;line-height:1.6;">
+        Creemos que la tecnología debe ser simple y accesible para todos. Por eso ofrecemos
+        herramientas fáciles de usar, rápidas y diseñadas para resolver necesidades reales,
+        desde estudiantes y emprendedores hasta programadores, docentes, diseñadores y empresas.
+    </p>
+
+    <h2 style="margin-top:25px;font-size:24px;font-weight:700;">Compromiso con la privacidad</h2>
+    <p style="font-size:17px;line-height:1.6;">
+        Respetamos tu privacidad. Los archivos que subís se procesan de forma temporal y no se 
+        almacenan de manera permanente. Además, cumplimos con prácticas seguras de manejo de datos
+        y políticas adecuadas para Google AdSense.
+    </p>
+
+    <h2 style="margin-top:25px;font-size:24px;font-weight:700;">¿Quién está detrás del proyecto?</h2>
+    <p style="font-size:17px;line-height:1.6;">
+        Esta plataforma es desarrollada y mantenida por un creador independiente apasionado por 
+        la programación, la web y las soluciones eficientes. Nuestro enfoque está en mejorar
+        continuamente las herramientas, agregar nuevas funciones y ofrecer la mejor experiencia 
+        posible a cada usuario.
+    </p>
+
+    <h2 style="margin-top:25px;font-size:24px;font-weight:700;">Contacto</h2>
+    <p style="font-size:17px;line-height:1.6;">
+        Si tenés sugerencias, ideas o encontraste algún problema, podés escribirnos desde el 
+        formulario de <strong><a href="{{ url_for('contacto') }}" style="color:#1a73e8;">Contacto</a></strong>.
+        Nos encanta recibir comentarios para mejorar.
+    </p>
+
+</div>
+
+{% endblock %}

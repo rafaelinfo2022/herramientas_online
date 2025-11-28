@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+    <url>
+        <loc>https://convertilio.cloud/</loc>
+        <priority>1.0</priority>
+    </url>
+
+    <url>
+        <loc>https://convertilio.cloud/sobre-nosotros</loc>
+        <priority>0.5</priority>
+    </url>
+
+    <url>
+        <loc>https://convertilio.cloud/contacto</loc>
+        <priority>0.7</priority>
+    </url>
+
+    <url>
+        <loc>https://convertilio.cloud/politica-privacidad</loc>
+    </url>
+
+    <url>
+        <loc>https://convertilio.cloud/terminos-condiciones</loc>
+    </url>
+
+    <url>
+        <loc>https://convertilio.cloud/politica-cookies</loc>
+    </url>
+
+    <url><loc>https://convertilio.cloud/image_to_jpg</loc></url>
+    <url><loc>https://convertilio.cloud/image_to_png</loc></url>
+    <url><loc>https://convertilio.cloud/image_to_icon</loc></url>
+    <url><loc>https://convertilio.cloud/remove_background</loc></url>
+    <url><loc>https://convertilio.cloud/compress_image</loc></url>
+    <url><loc>https://convertilio.cloud/image_to_text</loc></url>
+    <url><loc>https://convertilio.cloud/resize_image</loc></url>
+    <url><loc>https://convertilio.cloud/image_to_pdf</loc></url>
+
+    <url><loc>https://convertilio.cloud/pdf_to_word</loc></url>
+    <url><loc>https://convertilio.cloud/word_to_pdf</loc></url>
+    <url><loc>https://convertilio.cloud/pdf_to_images</loc></url>
+    <url><loc>https://convertilio.cloud/merge_pdfs</loc></url>
+    <url><loc>https://convertilio.cloud/pdf_ocr_excel</loc></url>
+    <url><loc>https://convertilio.cloud/pdf_split</loc></url>
+    <url><loc>https://convertilio.cloud/pdf_compress</loc></url>
+
+    <url><loc>https://convertilio.cloud/video_compress</loc></url>
+    <url><loc>https://convertilio.cloud/video_to_mp4</loc></url>
+    <url><loc>https://convertilio.cloud/video_downloader</loc></url>
+
+    <url><loc>https://convertilio.cloud/audio_converter</loc></url>
+    <url><loc>https://convertilio.cloud/vocal_remover</loc></url>
+
+    <url><loc>https://convertilio.cloud/qr_generator</loc></url>
+    <url><loc>https://convertilio.cloud/word_counter</loc></url>
+    <url><loc>https://convertilio.cloud/password_generator</loc></url>
+
+</urlset>

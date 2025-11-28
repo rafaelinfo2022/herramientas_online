@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="legal-page" style="max-width:900px;margin:30px auto;background:#fff;
+            padding:25px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+    <h1 style="margin-bottom:15px;">Política de Privacidad</h1>
+    <p><strong>Última actualización:</strong> {{ datetime.utcnow().strftime("%d/%m/%Y") if datetime else "2025" }}</p>
+
+    <p>
+        Esta Política de Privacidad describe cómo recopilamos, usamos y protegemos la
+        información de los usuarios que utilizan este sitio web de herramientas online
+        de conversión de archivos <a href="http://convertilio.cloud">convertilio.cloud</a>.
+    </p>
+
+    <h2>1. Información que recopilamos</h2>
+    <ul>
+        <li><strong>Datos técnicos:</strong> dirección IP, navegador, sistema operativo, idioma,
+            páginas visitadas y tiempo de permanencia (a través de herramientas de analítica como Google Analytics).</li>
+        <li><strong>Datos proporcionados voluntariamente:</strong> nombre, correo electrónico y mensaje
+            cuando el usuario completa el formulario de contacto/feedback.</li>
+        <li><strong>Archivos subidos:</strong> los archivos que el usuario sube a las distintas herramientas
+            (imágenes, documentos, audio, video, etc.).</li>
+    </ul>
+
+    <h2>2. Uso de la información</h2>
+    <p>Utilizamos la información recopilada para:</p>
+    <ul>
+        <li>Prestar y mejorar las herramientas del Sitio.</li>
+        <li>Responder consultas o mensajes enviados por el usuario.</li>
+        <li>Realizar estadísticas anónimas de uso (por ejemplo, herramientas más utilizadas).</li>
+        <li>Mantener la seguridad y el correcto funcionamiento del Sitio.</li>
+    </ul>
+
+    <h2>3. Archivos subidos y procesamiento</h2>
+    <ul>
+        <li>Los archivos se utilizan únicamente para realizar la conversión o procesamiento solicitado.</li>
+        <li>No revendemos ni compartimos los archivos con terceros.</li>
+        <li>Los archivos pueden almacenarse temporalmente en el servidor sólo el tiempo necesario
+            para completar el proceso, tras lo cual son eliminados de forma automática o periódica.</li>
+    </ul>
+
+    <h2>4. Cookies y tecnologías similares</h2>
+    <p>
+        Utilizamos cookies propias y de terceros (como Google Analytics y Google AdSense) para
+        mejorar la experiencia de usuario, analizar el tráfico y mostrar anuncios personalizados.
+        Podés gestionar tus preferencias de cookies desde el aviso de cookies o la configuración
+        de tu navegador.
+    </p>
+
+    <h2>5. Servicios de terceros</h2>
+    <p>El Sitio puede utilizar servicios de terceros, por ejemplo:</p>
+    <ul>
+        <li><strong>Google Analytics:</strong> para estadísticas anónimas de tráfico.</li>
+        <li><strong>Google AdSense u otras redes de anuncios:</strong> para mostrar publicidad.</li>
+    </ul>
+    <p>
+        Estos servicios pueden utilizar cookies y otros identificadores. Te recomendamos consultar
+        sus propias políticas de privacidad.
+    </p>
+
+    <h2>6. Conservación de los datos</h2>
+    <p>
+        Los datos de contacto enviados por formularios pueden conservarse mientras sea necesario
+        para gestionar consultas, mejoras del servicio o cuestiones legales. Los archivos
+        subidos para conversión se conservan únicamente de forma temporal.
+    </p>
+
+    <h2>7. Tus derechos</h2>
+    <p>Como usuario, podés:</p>
+    <ul>
+        <li>Solicitar acceso, rectificación o eliminación de tus datos de contacto.</li>
+        <li>Solicitar información sobre el tratamiento de tus datos.</li>
+    </ul>
+    <p>
+        Para ejercer tus derechos, podés contactarnos a través del formulario de contacto del Sitio.
+    </p>
+
+    <h2>8. Seguridad</h2>
+    <p>
+        Implementamos medidas razonables de seguridad para proteger la información. Sin embargo,
+        ningún sistema es 100% seguro, por lo que no podemos garantizar la seguridad absoluta
+        de la información transmitida por Internet.
+    </p>
+
+    <h2>9. Cambios en esta Política</h2>
+    <p>
+        Podemos actualizar esta Política de Privacidad en cualquier momento. Las modificaciones
+        se publicarán en esta página y entrarán en vigencia a partir de su publicación.
+    </p>
+
+    <h2>10. Contacto</h2>
+    <p>
+        Si tenés dudas sobre esta Política de Privacidad, podés escribirnos desde la página de
+        contacto del Sitio.
+    </p>
+</div>
+
+{% endblock %}

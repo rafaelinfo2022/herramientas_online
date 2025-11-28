@@ -1,4 +1,6 @@
-User-Agent: *
+User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin_login
 
-Sitemap: https://TU-DOMINIO.com/sitemap.xml
+Sitemap: https://convertilio.cloud/sitemap.xml

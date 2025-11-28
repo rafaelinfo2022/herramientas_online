@@ -2,11 +2,65 @@
 {% block content %}
 
 <a href="{{ url_for('admin_logout') }}" style="float:right;">Cerrar sesión</a>
+
+<h2 style="text-align:center; font-weight:800;">📊 Panel Administrativo</h2>
+
+<!-- ============================= -->
+<!-- 📈 ESTADÍSTICAS DEL SITIO -->
+<!-- ============================= -->
+<div style="max-width:900px; margin: 25px auto; background:#fff; padding:20px; 
+            border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+
+    <h3 style="font-weight:700; margin-bottom:10px;">📈 Estadísticas Generales</h3>
+
+    <p><strong>Visitas Totales:</strong> {{ stats.total_visits }}</p>
+
+    <h4>📅 Visitas por Día (últimos 7 días)</h4>
+    <ul>
+        {% for day, count in daily %}
+        <li>{{ day }} → {{ count }}</li>
+        {% endfor %}
+    </ul>
+
+    <h4>📆 Visitas por Semana (últimas 6 semanas)</h4>
+    <ul>
+        {% for week, count in weekly %}
+        <li>{{ week }} → {{ count }}</li>
+        {% endfor %}
+    </ul>
+
+    <h4>🗓 Visitas por Mes (últimos 6 meses)</h4>
+    <ul>
+        {% for month, count in monthly %}
+        <li>{{ month }} → {{ count }}</li>
+        {% endfor %}
+    </ul>
+
+    <h4>📅 Visitas por Año</h4>
+    <ul>
+        {% for year, count in stats.yearly.items() %}
+        <li>{{ year }} → {{ count }}</li>
+        {% endfor %}
+    </ul>
+
+    <h3 style="margin-top:25px;">🔥 Herramientas Más Usadas</h3>
+    <ol>
+        {% for tool, count in ranking %}
+        <li>{{ tool }} — {{ count }} usos</li>
+        {% endfor %}
+    </ol>
+
+</div>
+
+<!-- ============================= -->
+<!-- 📨 MENSAJES RECIBIDOS -->
+<!-- ============================= -->
 <h2 style="text-align:center; font-weight:800;">📨 Mensajes Recibidos</h2>
 
 <div style="max-width:800px; margin: 20px auto;">
     {% for c in comentarios %}
-    <div style="background:#fff; padding:15px; margin-bottom:15px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1); 
+    <div style="background:#fff; padding:15px; margin-bottom:15px; border-radius:10px; 
+                box-shadow:0 4px 12px rgba(0,0,0,0.1); 
                 border-left: 6px solid {% if c.leido %}#4caf50{% else %}#ff9800{% endif %};">
 
         <p><strong>📅 Fecha:</strong> {{ c.fecha }}</p>
@@ -31,7 +85,6 @@
 
     </div>
     {% endfor %}
-
 </div>
 
 {% endblock %}

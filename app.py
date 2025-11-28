@@ -32,10 +32,10 @@ import time
 from datetime import datetime
 import json
 from dotenv import load_dotenv
+from PyPDF2 import PdfMerger
+
 
 load_dotenv()  # Carga las variables desde el archivo .env
-
-
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
@@ -54,41 +54,6 @@ ADMIN_PASS_HASH = os.getenv("ADMIN_PASS_HASH")
 def request_entity_too_large(error):
     flash("El archivo es demasiado grande. El límite es de 16 GB.", "error")
     return redirect(request.url)
-
-@app.route('/robots.txt')
-def robots():
-    return send_from_directory('static', 'robots.txt')
-
-
-@app.route("/sitemap.xml")
-def sitemap():
-
-    base_url = "https://TU-DOMINIO.com"
-
-    rutas = [
-        "index",
-        "image_to_jpg", "image_to_png", "image_to_icon", "remove_background",
-        "compress_image", "resize_image", "image_to_text",
-        "pdf_to_word", "word_to_pdf", "pdf_to_images", "merge_pdfs",
-        "pdf_ocr_excel", "pdf_split", "pdf_compress", "image_to_pdf",
-        "video_compress", "video_to_mp4", "video_downloader",
-        "audio_converter", "vocal_remover",
-        "qr_generator", "word_counter", "password_generator"
-    ]
-
-    xml = '<?xml version="1.0" encoding="UTF-8"?>'
-    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-
-    for r in rutas:
-        xml += f"""
-            <url>
-                <loc>{base_url}{url_for(r)}</loc>
-                <priority>0.80</priority>
-            </url>
-        """
-
-    xml += "</urlset>"
-    return Response(xml, mimetype="application/xml")
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
@@ -112,6 +77,11 @@ MKBMP_PATH = r"C:\potrace-1.16.win64\mkbitmap.exe"
 AUTOTRACE_EXE = os.path.join(BASE_DIR, "autotrace.exe")  
 
 BG_MODEL = new_session("u2net") 
+STATS_FILE = "analytics.json"
+
+def save_stats(data):
+    with open(STATS_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
 
 
 def check_ffmpeg():
@@ -136,6 +106,8 @@ def check_ffmpeg():
 
 # Llamar esta función al inicio
 FFMPEG_AVAILABLE = check_ffmpeg()
+
+
 # --------- RUTAS GENERALES ---------
 @app.route("/admin_login", methods=["GET", "POST"])
 def admin_login():
@@ -161,8 +133,6 @@ def admin_login():
 
     return render_template("login_admin.html")
 
-
-
 @app.route("/admin_feedback")
 def admin_feedback():
 
@@ -170,14 +140,33 @@ def admin_feedback():
         flash("Acceso restringido. Iniciá sesión.", "error")
         return redirect("/admin_login")
 
+    # Cargar comentarios
     comentarios = []
-
     if os.path.exists("feedback/comentarios.json"):
         with open("feedback/comentarios.json", "r", encoding="utf-8") as f:
             for linea in f:
                 comentarios.append(json.loads(linea.strip()))
 
-    return render_template("admin_feedback.html", comentarios=comentarios)
+    # Cargar estadísticas
+    stats = load_stats()
+
+    # Ranking herramientas
+    ranking = sorted(stats["tools"].items(), key=lambda x: x[1], reverse=True)
+
+    # Últimos periodos
+    daily = sorted(stats["daily"].items())[-7:]        # últimos 7 días
+    weekly = sorted(stats["weekly"].items())[-6:]      # últimas semanas
+    monthly = sorted(stats["monthly"].items())[-6:]    # últimos 6 meses
+
+    return render_template(
+        "admin_feedback.html",
+        comentarios=comentarios,
+        stats=stats,
+        ranking=ranking,
+        daily=daily,
+        weekly=weekly,
+        monthly=monthly
+    )
 
 @app.route("/admin_logout")
 def admin_logout():
@@ -185,16 +174,14 @@ def admin_logout():
     flash("Sesión cerrada", "success")
     return redirect("/admin_login")
 
-
-@app.route("/feedback", methods=["GET", "POST"])
-def feedback():
+@app.route("/contacto", methods=["GET", "POST"])
+def contacto():
 
     if request.method == "POST":
         nombre = request.form.get("nombre")
         email = request.form.get("email")
         mensaje = request.form.get("mensaje")
         fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-      
 
         data = {
             "id": str(uuid.uuid4()),
@@ -212,11 +199,14 @@ def feedback():
         with open("feedback/comentarios.json", "a", encoding="utf-8") as f:
             f.write(json.dumps(data, ensure_ascii=False) + "\n")
 
+        flash("Tu mensaje fue enviado correctamente. ¡Gracias por contactarnos!", "success")
+        return redirect("/contacto")
 
-        flash("¡Gracias por tu comentario! Nos ayuda a mejorar.", "success")
-        return redirect("/feedback")
+    return render_template("contacto.html")
 
-    return render_template("feedback.html")
+@app.route("/feedback")
+def feedback_redirect():
+    return redirect("/contacto")
 
 @app.route("/marcar_leido/<msg_id>")
 def marcar_leido(msg_id):
@@ -265,9 +255,139 @@ def eliminar_mensaje(msg_id):
     flash("Mensaje eliminado", "success")
     return redirect("/admin_feedback")
 
+@app.route("/admin/stats")
+def admin_stats():
+    stats = load_stats()
 
+    # Ranking herramientas
+    ranking = sorted(
+        stats["tools"].items(),
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    return render_template("admin_stats.html",
+                           stats=stats,
+                           ranking=ranking)
+
+
+
+import json, os
+from datetime import datetime
+from flask import request
+
+# Nombre del archivo donde guardamos las estadísticas
+STATS_FILE = "analytics.json"
+
+def load_stats():
+    if not os.path.exists(STATS_FILE):
+        return {
+            "total_visits": 0,
+            "daily": {},
+            "weekly": {},
+            "monthly": {},
+            "yearly": {},
+            "tools": {},
+            "history": []
+        }
+    with open(STATS_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def save_stats(data):
+    with open(STATS_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
+
+@app.after_request
+def add_header(r):
+    r.headers["Cache-Control"] = "public, max-age=86400"
+    return r
+
+# ==========================
+#    Sintemap
+# ==========================
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory('static', 'sitemap.xml')
+
+# ==========================
+#    Robots
+# ==========================
+@app.route('/robots.txt')
+def robots_txt():
+    return send_from_directory('static', 'robots.txt')
+
+
+# ==========================
+#    Legalidad
+# ==========================
+@app.route("/politica-privacidad")
+def politica_privacidad():
+    return render_template("politica_privacidad.html")
+
+
+@app.route("/terminos-condiciones")
+def terminos_condiciones():
+    return render_template("terminos_condiciones.html")
+
+
+@app.route("/politica-cookies")
+def politica_cookies():
+    return render_template("politica_cookies.html")
+
+# ==========================
+#    Sobre Nosotros
+# ==========================
+@app.route("/sobre-nosotros")
+def sobre_nosotros():
+    return render_template("sobre_nosotros.html")
+
+
+# ==========================
+#    🏠 INDEX + CONTADOR
+# ==========================
 @app.route("/")
 def index():
+
+    # =============================
+    # 1. Cargar estadísticas
+    # =============================
+    stats = load_stats()
+    now = datetime.now()
+
+    # Formatos
+    day = now.strftime("%Y-%m-%d")
+    week = now.strftime("%Y-W%U")
+    month = now.strftime("%Y-%m")
+    year = now.strftime("%Y")
+
+    # =============================
+    # 2. Contadores principales
+    # =============================
+    stats["total_visits"] += 1
+
+    stats["daily"][day] = stats["daily"].get(day, 0) + 1
+    stats["weekly"][week] = stats["weekly"].get(week, 0) + 1
+    stats["monthly"][month] = stats["monthly"].get(month, 0) + 1
+    stats["yearly"][year] = stats["yearly"].get(year, 0) + 1
+
+    # =============================
+    # 3. Historial (últimas 50)
+    # =============================
+    stats["history"].append({
+        "date": now.strftime("%Y-%m-%d %H:%M:%S"),
+        "ip": request.remote_addr,
+        "agent": request.headers.get("User-Agent")
+    })
+
+    # Solo guardamos las últimas 50 visitas
+    stats["history"] = stats["history"][-50:]
+
+    # Guardamos el archivo
+    save_stats(stats)
+
+    # =============================
+    # 4. Lista de herramientas
+    # =============================
     tools = [
         {"name": "Convertir imagen a JPG", "endpoint": "image_to_jpg"},
         {"name": "Convertir Imagen a PNG", "endpoint": "image_to_png"},
@@ -290,13 +410,18 @@ def index():
         {"name": "Convertidor de Audio", "endpoint": "audio_converter"},
         {"name": "Eliminador de Voz (IA)", "endpoint": "vocal_remover"},
         {"name": "Descargador Universal (YouTube/Redes)", "endpoint": "video_downloader"},
-
-
-
-
-        
     ]
+
     return render_template("index.html", tools=tools)
+
+
+# =============================
+# Registro de herramientas
+# =============================
+def register_tool(tool_name):
+    stats = load_stats()
+    stats["tools"][tool_name] = stats["tools"].get(tool_name, 0) + 1
+    save_stats(stats)
 
 
 @app.route("/download/<path:filename>")
@@ -312,6 +437,7 @@ def download_image_to_pdf(folder, filename):
 # --------- 1) CONVERTIR IMAGEN A JPG ---------
 @app.route("/image-to-jpg", methods=["GET", "POST"])
 def image_to_jpg():
+    register_tool("image_to_jpg")
     if request.method == "POST":
         file = request.files.get("file")
         if not file or file.filename == "":
@@ -341,6 +467,7 @@ def image_to_jpg():
 # --------- 2) COMPRIMIR IMAGEN ---------
 @app.route("/compress-image", methods=["GET", "POST"])
 def compress_image():
+    register_tool("compress_image")
     if request.method == "POST":
         file = request.files.get("file")
         quality = request.form.get("quality", "60")
@@ -380,6 +507,7 @@ def compress_image():
 # --------- 3) CONVERTIR PDF A WORD ---------
 @app.route("/pdf-to-word", methods=["GET", "POST"])
 def pdf_to_word():
+    register_tool("pdf-to-word")
     if request.method == "POST":
         file = request.files.get("file")
         if not file or file.filename == "":
@@ -415,6 +543,7 @@ def pdf_to_word():
 # --------- 4) UNIR PDFs ---------
 @app.route("/merge-pdfs", methods=["GET", "POST"])
 def merge_pdfs():
+    register_tool("merge-pdfs")
     if request.method == "POST":
         files = request.files.getlist("files")
         pdf_paths = []
@@ -457,6 +586,7 @@ def merge_pdfs():
 # --------- 5) GENERADOR DE CÓDIGO QR ---------
 @app.route("/qr-generator", methods=["GET", "POST"])
 def qr_generator():
+    register_tool("qr-generator")
     if request.method == "POST":
         text = request.form.get("text", "").strip()
         if not text:
@@ -483,6 +613,7 @@ def qr_generator():
 
 @app.route("/word-to-pdf", methods=["GET", "POST"])
 def word_to_pdf():
+    register_tool("word-to-pdf")
     if request.method == "POST":
         file = request.files.get("file")
 
@@ -519,6 +650,7 @@ def word_to_pdf():
 # --------- 7) PDF A IMÁGENES ---------
 @app.route("/pdf-to-images", methods=["GET", "POST"])
 def pdf_to_images():
+    register_tool("pdf-to-images")
     if request.method == "POST":
         file = request.files.get("file")
 
@@ -561,6 +693,7 @@ def pdf_to_images():
 # --------- 8) CONTADOR DE PALABRAS ---------
 @app.route("/word-counter", methods=["GET", "POST"])
 def word_counter():
+    register_tool("word-counter")
     text = ""
     result = None
     error = None
@@ -629,6 +762,7 @@ def word_counter():
 
 @app.route("/password-generator", methods=["GET", "POST"])
 def password_generator():
+    register_tool("password-generator")
     generated_password = None
 
     if request.method == "POST":
@@ -663,6 +797,7 @@ def password_generator():
 
 @app.route("/image-to-png", methods=["GET", "POST"])
 def image_to_png():
+    register_tool("image-to-png")
     if request.method == "POST":
         file = request.files.get("file")
 
@@ -701,6 +836,7 @@ def image_to_png():
 
 @app.route("/image-to-icon", methods=["GET", "POST"])
 def image_to_icon():
+    register_tool("image-to-icon")
     if request.method == "POST":
         file = request.files.get("file")
         size = request.form.get("size", "256")
@@ -749,6 +885,7 @@ def image_to_icon():
 # --------- 12) QUITAR FONDO DE IMAGEN ---------
 @app.route("/remove-background", methods=["GET", "POST"])
 def remove_background():
+    register_tool("remove-background")
     if request.method == "POST":
 
         file = request.files.get("file")
@@ -798,6 +935,7 @@ def remove_background():
 
 @app.route("/pdf-ocr-excel", methods=["GET", "POST"])
 def pdf_ocr_excel():
+    register_tool("pdf-ocr-excel")
     if request.method == "POST":
         file = request.files.get("file")
 
@@ -858,6 +996,7 @@ pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tessera
 
 @app.route("/pdf-split", methods=["GET", "POST"])
 def pdf_split():
+    register_tool("pdf-split")
     if request.method == "POST":
         file = request.files.get("file")
         mode = request.form.get("mode", "all")
@@ -954,6 +1093,7 @@ GS_PATH = r"C:\Program Files\gs\gs10.06.0\bin\gswin64c.exe"
 
 @app.route("/pdf-compress", methods=["GET", "POST"])
 def pdf_compress():
+    register_tool("pdf-compress")
     if request.method == "POST":
         file = request.files.get("file")
         quality = request.form.get("quality", "medium")
@@ -1011,6 +1151,7 @@ def pdf_compress():
 
 # --------- 16) COMPRESOR DE VIDEO (VERSIÓN PRO MAX) ---------
 def get_video_duration(path):
+    register_tool("video-compress")
     cmd = [
         FFPROBE_PATH,
         "-v", "error",
@@ -1026,6 +1167,7 @@ def get_video_duration(path):
 
 @app.route("/video-compress", methods=["GET", "POST"])
 def video_compress():
+    register_tool("video-compress")
     if request.method == "POST":
         file = request.files.get("file")
         preset = request.form.get("preset")
@@ -1137,6 +1279,7 @@ def video_compress():
 
 # --------- 17) CONVERTIR VIDEO A MP4 ---------
 def get_video_duration(path):
+    register_tool("video-to-mp4")
     """Devuelve la duración del video en segundos"""
     result = subprocess.run(
         [FFPROBE_PATH, "-v", "error", "-show_entries", "format=duration",
@@ -1151,6 +1294,7 @@ def get_video_duration(path):
 
 @app.route("/video-to-mp4", methods=["GET", "POST"])
 def video_to_mp4():
+    register_tool("video-to-mp4")
     download_url = None
 
     if request.method == "POST":
@@ -1199,12 +1343,14 @@ def video_to_mp4():
 
 @app.errorhandler(RequestEntityTooLarge)
 def too_large(e):
+    register_tool("video-to-mp4")
     flash("El video supera el tamaño máximo permitido (1GB).", "error")
     return redirect(request.url)
 
 # ------------ 18) AUDIO CONVERTER (FFMPEG)  ------------
 @app.route("/audio_converter", methods=["GET", "POST"])
 def audio_converter():
+    register_tool("audio-converter")
     if request.method == "POST":
         try:
             if "audio_file" not in request.files:
@@ -1308,6 +1454,7 @@ def audio_converter():
 # ================================
 @app.route("/vocal_remover", methods=["GET", "POST"])
 def vocal_remover():
+    register_tool("vocal-remover")
     if request.method == "POST":
         try:
             if "audio_file" not in request.files:
@@ -1464,6 +1611,7 @@ def vocal_remover():
 # ================================
 @app.route("/video_downloader", methods=["GET", "POST"])
 def video_downloader():
+    register_tool("video-downloader")
     if request.method == "POST":
         url = request.form.get("url", "").strip()
         fmt = request.form.get("format", "video")
@@ -1623,6 +1771,7 @@ def video_downloader():
 # --------- 21) REDIMENSIONAR IMAGEN ---------
 @app.route("/resize-image", methods=["GET", "POST"])
 def resize_image():
+    register_tool("resize-image")
     if request.method == "POST":
         file = request.files.get("file")
         width = int(request.form.get("width"))
@@ -1658,6 +1807,7 @@ def resize_image():
 # --------- 22) REDIMENSIONAR IMAGEN ---------
 @app.route("/image_to_pdf", methods=["GET", "POST"])
 def image_to_pdf():
+    register_tool("image-to-pdf")
     if request.method == "POST":
         images = request.files.getlist("images")
 
@@ -1704,6 +1854,7 @@ def image_to_pdf():
 # 23) IMAGEN → TEXTO (OCR)
 # ============================
 def ocr_image_ordered(path):
+    register_tool("image-to-text")
     try:
         img = Image.open(path)
 
@@ -1723,6 +1874,7 @@ def ocr_image_ordered(path):
 
 @app.route("/image_to_text", methods=["GET", "POST"])
 def image_to_text():
+    register_tool("image-to-text")
     extracted_text = None
     error_message = None
 
@@ -1747,9 +1899,6 @@ def image_to_text():
         extracted_text=extracted_text,
         error_message=error_message
     )
-
-
-
 
 
 if __name__ == "__main__":
