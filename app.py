@@ -90,18 +90,18 @@ def check_ffmpeg():
         # Intentar encontrar ffmpeg en el PATH
         ffmpeg_path = shutil.which("ffmpeg")
         if ffmpeg_path:
-            print(f"✅ FFmpeg encontrado en: {ffmpeg_path}")
+            print(f"FFmpeg encontrado en: {ffmpeg_path}")
             return ffmpeg_path
         
         # Verificar si existe en la ruta configurada
         if os.path.exists(FFMPEG_PATH):
-            print(f"✅ FFmpeg encontrado en ruta configurada: {FFMPEG_PATH}")
+            print(f"FFmpeg encontrado en ruta configurada: {FFMPEG_PATH}")
             return FFMPEG_PATH
             
-        print("❌ FFmpeg no encontrado")
+        print("FFmpeg no encontrado")
         return None
     except Exception as e:
-        print(f"❌ Error buscando FFmpeg: {e}")
+        print(f"Error buscando FFmpeg: {e}")
         return None
 
 # Llamar esta función al inicio

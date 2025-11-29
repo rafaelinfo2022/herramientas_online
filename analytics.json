@@ -1,28 +1,32 @@
 {
-    "total_visits": 41,
+    "total_visits": 45,
     "daily": {
         "2025-11-26": 11,
-        "2025-11-27": 30
+        "2025-11-27": 30,
+        "2025-11-28": 2,
+        "2025-11-29": 2
     },
     "weekly": {
-        "2025-W47": 41
+        "2025-W47": 45
     },
     "monthly": {
-        "2025-11": 41
+        "2025-11": 45
     },
     "yearly": {
-        "2025": 41
+        "2025": 45
     },
     "tools": {
         "image_to_jpg": 1,
         "remove-background": 2,
-        "image-to-icon": 8,
-        "image-to-png": 12,
+        "image-to-icon": 9,
+        "image-to-png": 14,
         "pdf-to-images": 2,
-        "word-counter": 1,
-        "pdf-compress": 1,
+        "word-counter": 2,
+        "pdf-compress": 3,
         "merge-pdfs": 9,
-        "video-downloader": 1
+        "video-downloader": 1,
+        "password-generator": 1,
+        "word-to-pdf": 1
     },
     "history": [
         {
@@ -227,6 +231,26 @@
         },
         {
             "date": "2025-11-27 23:56:57",
+            "ip": "127.0.0.1",
+            "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0"
+        },
+        {
+            "date": "2025-11-28 00:26:56",
+            "ip": "127.0.0.1",
+            "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+        },
+        {
+            "date": "2025-11-28 00:28:25",
+            "ip": "127.0.0.1",
+            "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+        },
+        {
+            "date": "2025-11-29 00:33:07",
+            "ip": "127.0.0.1",
+            "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0"
+        },
+        {
+            "date": "2025-11-29 01:41:41",
             "ip": "127.0.0.1",
             "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0"
         }
