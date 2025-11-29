@@ -33,6 +33,7 @@ from datetime import datetime
 import json
 from dotenv import load_dotenv
 from PyPDF2 import PdfMerger
+import platform
 
 
 load_dotenv()  # Carga las variables desde el archivo .env
@@ -65,16 +66,25 @@ os.makedirs(GENERATED_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["GENERATED_FOLDER"] = GENERATED_FOLDER
 
+# Detectar sistema operativo
+IS_WINDOWS = platform.system() == "Windows"
 
+if IS_WINDOWS:
+    # Rutas de Windows (las que ya usás)
+    FFMPEG_PATH = r"C:\ffmpeg-8.0-full_build\bin\ffmpeg.exe"
+    FFPROBE_PATH = r"C:\ffmpeg-8.0-full_build\bin\ffprobe.exe"
+    POTRACE_PATH = r"C:\potrace-1.16.win64\potrace.exe"
+    MKBITMAP_PATH = r"C:\potrace-1.16.win64\mkbitmap.exe"
+else:
+    # Rutas en Linux (VPS)
+    FFMPEG_PATH = "ffmpeg"
+    FFPROBE_PATH = "ffprobe"
+    POTRACE_PATH = "potrace"
+    MKBITMAP_PATH = "mkbitmap"
 
-# Ruta a FFmpeg (nombres corregidos)
-FFMPEG_PATH = r"C:\ffmpeg-8.0-full_build\bin\ffmpeg.exe"  # Corregido: "ffmpeg" no "ffimpeg"
-FFPROBE_PATH = r"C:\ffmpeg-8.0-full_build\bin\ffprobe.exe"  # Corregido: "ffprobe" no "fiprobe"
-
-POTRACE_PATH = r"C:\potrace-1.16.win64\potrace.exe"
-MKBMP_PATH = r"C:\potrace-1.16.win64\mkbitmap.exe"
-
-AUTOTRACE_EXE = os.path.join(BASE_DIR, "autotrace.exe")  
+# Autotrace (solo existe en Linux si lo instalás)
+AUTOTRACE_EXE = os.path.join(BASE_DIR, "autotrace.exe") if IS_WINDOWS else "autotrace"
+ 
 
 BG_MODEL = new_session("u2net") 
 STATS_FILE = "analytics.json"
