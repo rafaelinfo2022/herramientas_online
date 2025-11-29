@@ -1358,9 +1358,11 @@ def too_large(e):
     return redirect(request.url)
 
 # ------------ 18) AUDIO CONVERTER (FFMPEG)  ------------
+# ------------ 18) AUDIO CONVERTER (FFMPEG)  ------------
 @app.route("/audio_converter", methods=["GET", "POST"])
 def audio_converter():
     register_tool("audio-converter")
+    
     if request.method == "POST":
         try:
             if "audio_file" not in request.files:
@@ -1380,25 +1382,24 @@ def audio_converter():
 
             # Opciones del formulario
             output_format = request.form.get("format", "mp3")
-            bitrate = request.form.get("bitrate", "192k")  # Default 192k
+            bitrate = request.form.get("bitrate", "192k")
 
             # Nombre de salida único
             out_name = f"{uuid.uuid4().hex}_converted.{output_format}"
             output_path = os.path.join(app.config["GENERATED_FOLDER"], out_name)
 
-            # Ruta FFmpeg (Idealmente usar variable de entorno, pero mantenemos compatibilidad por ahora)
-            ffmpeg_path = r"C:\ffmpeg-8.0-full_build\bin\ffmpeg.exe"
+            # USAR RUTA AUTOMÁTICA DEL SISTEMA
+            ffmpeg_path = FFMPEG_PATH
 
             # Construir comando
             cmd = [ffmpeg_path, "-y", "-i", input_path, "-vn"]
 
-            # Configuración por formato
             if output_format == "mp3":
                 cmd.extend(["-acodec", "libmp3lame", "-b:a", bitrate])
             elif output_format == "aac":
                 cmd.extend(["-acodec", "aac", "-b:a", bitrate])
             elif output_format == "wav":
-                cmd.extend(["-acodec", "pcm_s16le"]) # WAV no usa bitrate comprimido
+                cmd.extend(["-acodec", "pcm_s16le"])
             elif output_format == "ogg":
                 cmd.extend(["-acodec", "libvorbis", "-b:a", bitrate])
             elif output_format == "m4a":
@@ -1418,13 +1419,14 @@ def audio_converter():
                     "-of", "csv=p=0",
                     input_path
                 ]
+
                 probe_result = subprocess.run(probe_cmd, capture_output=True, text=True)
                 if not probe_result.stdout.strip():
                     flash("El archivo seleccionado no contiene ninguna pista de audio.", "error")
                     return redirect(request.url)
+
             except Exception as e:
                 print(f"Error verificando audio: {e}")
-                # Si falla la verificación, intentamos convertir igual por si acaso
 
             # Ejecutar conversión
             result = subprocess.run(cmd, capture_output=True, text=True)
@@ -1432,11 +1434,10 @@ def audio_converter():
             if result.returncode != 0:
                 error_msg = result.stderr
                 print(f"FFmpeg Error: {error_msg}")
-                # Mostrar error técnico simplificado si es otro tipo de fallo
                 if "does not contain any stream" in error_msg:
-                     flash("El archivo no contiene datos de audio válidos.", "error")
+                    flash("El archivo no contiene datos de audio válidos.", "error")
                 else:
-                     flash(f"Error en la conversión: {error_msg[-100:]}", "error")
+                    flash(f"Error en la conversión: {error_msg[-100:]}", "error")
                 return redirect(request.url)
 
             # Limpiar archivo de entrada
@@ -1446,10 +1447,6 @@ def audio_converter():
                 pass
 
             flash("Conversión completada con éxito.", "success")
-            
-            # En lugar de descargar directo, mostramos la página con el botón de descarga (mejor UX)
-            # O podemos descargar directo si el usuario prefiere. 
-            # Para mantener consistencia con otros módulos, renderizamos template con download_file
             return render_template("audio_converter.html", download_file=out_name)
 
         except Exception as e:
@@ -1458,6 +1455,7 @@ def audio_converter():
             return redirect(request.url)
 
     return render_template("audio_converter.html")
+
 
 # ================================
 # 19) ELIMINADOR DE VOZ (VOCAL REMOVER) - VERSIÓN MEJORADA
