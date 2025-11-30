@@ -63,18 +63,36 @@ GENERATED_FOLDER = os.path.join(BASE_DIR, "static", "generated")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(GENERATED_FOLDER, exist_ok=True)
 
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["GENERATED_FOLDER"] = GENERATED_FOLDER
+
 
 # Detectar sistema operativo
+import platform
+import os
+
 IS_WINDOWS = platform.system() == "Windows"
 
 if IS_WINDOWS:
+    # Ruta FIJA para tu PC local
     FFMPEG_PATH = r"C:\ffmpeg-8.0-full_build\bin\ffmpeg.exe"
     FFPROBE_PATH = r"C:\ffmpeg-8.0-full_build\bin\ffprobe.exe"
 else:
+    # En servidores Linux SIEMPRE debe ser esta ruta
     FFMPEG_PATH = "/usr/bin/ffmpeg"
     FFPROBE_PATH = "/usr/bin/ffprobe"
+
+# Verificación opcional pero útil
+def check_ffmpeg():
+    if os.path.exists(FFMPEG_PATH):
+        print(f"FFmpeg OK → {FFMPEG_PATH}")
+        return True
+    else:
+        print("⚠ WARNING: FFmpeg no encontrado en la ruta indicada")
+        return False
+
+check_ffmpeg()
+
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["GENERATED_FOLDER"] = GENERATED_FOLDER
 
 # Autotrace (solo existe en Linux si lo instalás)
 AUTOTRACE_EXE = os.path.join(BASE_DIR, "autotrace.exe") if IS_WINDOWS else "autotrace"
@@ -86,30 +104,6 @@ STATS_FILE = "analytics.json"
 def save_stats(data):
     with open(STATS_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
-
-
-def check_ffmpeg():
-    """Verificar si FFmpeg está disponible en el sistema"""
-    try:
-        # Intentar encontrar ffmpeg en el PATH
-        ffmpeg_path = shutil.which("ffmpeg")
-        if ffmpeg_path:
-            print(f"FFmpeg encontrado en: {ffmpeg_path}")
-            return ffmpeg_path
-        
-        # Verificar si existe en la ruta configurada
-        if os.path.exists(FFMPEG_PATH):
-            print(f"FFmpeg encontrado en ruta configurada: {FFMPEG_PATH}")
-            return FFMPEG_PATH
-            
-        print("FFmpeg no encontrado")
-        return None
-    except Exception as e:
-        print(f"Error buscando FFmpeg: {e}")
-        return None
-
-# Llamar esta función al inicio
-FFMPEG_AVAILABLE = check_ffmpeg()
 
 
 # --------- RUTAS GENERALES ---------
@@ -1387,6 +1381,7 @@ def audio_converter():
 
             # USAR RUTA AUTOMÁTICA DEL SISTEMA
             ffmpeg_path = FFMPEG_PATH
+            ffprobe_path = FFPROBE_PATH
 
             # Construir comando
             cmd = [ffmpeg_path, "-y", "-i", input_path, "-vn"]
@@ -1409,7 +1404,7 @@ def audio_converter():
             # Verificar si el archivo tiene streams de audio
             try:
                 probe_cmd = [
-                    FFPROBE_PATH,
+                    ffprobe_path,
                     "-v", "error",
                     "-select_streams", "a",
                     "-show_entries", "stream=index",
