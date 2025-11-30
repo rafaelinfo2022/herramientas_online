@@ -1547,12 +1547,17 @@ def vocal_remover():
                 return redirect(request.url)
 
             # Buscar archivos resultantes
-            track_name = os.path.splitext(input_filename)[0]
-            result_folder = os.path.join(output_dir, "htdemucs", track_name)
+            # Demucs genera los archivos directamente dentro de: output_dir/htdemucs/
+            result_folder = os.path.join(output_dir, "htdemucs")
 
             if not os.path.exists(result_folder):
-                flash("No se pudieron generar los archivos separados.", "error")
+                flash("Error: Demucs no generó los archivos esperados.", "error")
                 return redirect(request.url)
+
+            # Rutas correctas
+            vocals_path = os.path.join(result_folder, "vocals.mp3")
+            accompaniment_path = os.path.join(result_folder, "no_vocals.mp3")
+
 
             # Archivos generados
             vocals_path = os.path.join(result_folder, "vocals.mp3")
