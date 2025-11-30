@@ -70,17 +70,11 @@ app.config["GENERATED_FOLDER"] = GENERATED_FOLDER
 IS_WINDOWS = platform.system() == "Windows"
 
 if IS_WINDOWS:
-    # Rutas de Windows (las que ya usás)
     FFMPEG_PATH = r"C:\ffmpeg-8.0-full_build\bin\ffmpeg.exe"
     FFPROBE_PATH = r"C:\ffmpeg-8.0-full_build\bin\ffprobe.exe"
-    POTRACE_PATH = r"C:\potrace-1.16.win64\potrace.exe"
-    MKBITMAP_PATH = r"C:\potrace-1.16.win64\mkbitmap.exe"
 else:
-    # Rutas en Linux (VPS)
-    FFMPEG_PATH = "ffmpeg"
-    FFPROBE_PATH = "ffprobe"
-    POTRACE_PATH = "potrace"
-    MKBITMAP_PATH = "mkbitmap"
+    FFMPEG_PATH = "/usr/bin/ffmpeg"
+    FFPROBE_PATH = "/usr/bin/ffprobe"
 
 # Autotrace (solo existe en Linux si lo instalás)
 AUTOTRACE_EXE = os.path.join(BASE_DIR, "autotrace.exe") if IS_WINDOWS else "autotrace"
@@ -1357,7 +1351,6 @@ def too_large(e):
     flash("El video supera el tamaño máximo permitido (1GB).", "error")
     return redirect(request.url)
 
-# ------------ 18) AUDIO CONVERTER (FFMPEG)  ------------
 # ------------ 18) AUDIO CONVERTER (FFMPEG)  ------------
 @app.route("/audio_converter", methods=["GET", "POST"])
 def audio_converter():
