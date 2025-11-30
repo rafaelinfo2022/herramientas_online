@@ -1368,6 +1368,10 @@ def audio_converter():
                 flash("Seleccioná un archivo válido.", "error")
                 return redirect(request.url)
 
+            # Crear carpetas si no existen
+            os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+            os.makedirs(app.config["GENERATED_FOLDER"], exist_ok=True)
+
             # Guardar archivo temporal
             filename = secure_filename(file.filename)
             input_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
