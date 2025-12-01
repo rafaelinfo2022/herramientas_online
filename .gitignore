@@ -25,3 +25,6 @@ demucs_wrapper_log.txt
 # Archivos del sistema
 .DS_Store
 Thumbs.db
+
+# Analytics
+analytics.json

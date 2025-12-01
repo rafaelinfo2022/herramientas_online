@@ -1,23 +1,23 @@
 {
-    "total_visits": 50,
+    "total_visits": 51,
     "daily": {
         "2025-11-26": 11,
         "2025-11-27": 30,
         "2025-11-28": 2,
         "2025-11-29": 2,
         "2025-11-30": 1,
-        "2025-12-01": 4
+        "2025-12-01": 5
     },
     "weekly": {
         "2025-W47": 45,
-        "2025-W48": 5
+        "2025-W48": 6
     },
     "monthly": {
         "2025-11": 46,
-        "2025-12": 4
+        "2025-12": 5
     },
     "yearly": {
-        "2025": 50
+        "2025": 51
     },
     "tools": {
         "image_to_jpg": 1,
@@ -31,14 +31,10 @@
         "video-downloader": 1,
         "password-generator": 1,
         "word-to-pdf": 1,
-        "vocal-remover": 2
+        "vocal-remover": 2,
+        "image-to-text": 9
     },
     "history": [
-        {
-            "date": "2025-11-26 11:18:19",
-            "ip": "127.0.0.1",
-            "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0"
-        },
         {
             "date": "2025-11-26 11:23:43",
             "ip": "127.0.0.1",
@@ -281,6 +277,11 @@
         },
         {
             "date": "2025-12-01 16:07:46",
+            "ip": "127.0.0.1",
+            "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0"
+        },
+        {
+            "date": "2025-12-01 18:03:22",
             "ip": "127.0.0.1",
             "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0"
         }
