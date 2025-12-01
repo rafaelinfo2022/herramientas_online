@@ -610,12 +610,46 @@ def qr_generator():
 
     return render_template("qr_generator.html")
 
-
 # --------- 6) CONVERTIR WORD A PDF ---------
+import subprocess
+import platform
+from docx2pdf import convert as convert_windows
+
+def convert_docx_to_pdf(input_path, output_path):
+    try:
+        system = platform.system()
+
+        # 🟦 WINDOWS
+        if system == "Windows":
+            try:
+                convert_windows(input_path, output_path)
+                return True
+            except Exception as e:
+                print("Error en Windows con docx2pdf:", e)
+                return False
+
+        # 🟩 LINUX → Hostinger
+        else:
+            cmd = [
+                "soffice",
+                "--headless",
+                "--convert-to", "pdf",
+                "--outdir", os.path.dirname(output_path),
+                input_path
+            ]
+
+            subprocess.run(cmd, check=True)
+            return True
+
+    except Exception as e:
+        print("Error general conversión:", e)
+        return False
+
 
 @app.route("/word-to-pdf", methods=["GET", "POST"])
 def word_to_pdf():
     register_tool("word-to-pdf")
+
     if request.method == "POST":
         file = request.files.get("file")
 
@@ -624,6 +658,7 @@ def word_to_pdf():
             return redirect(request.url)
 
         filename = secure_filename(file.filename)
+
         if not filename.lower().endswith(".docx"):
             flash("El archivo debe ser un documento .docx", "error")
             return redirect(request.url)
@@ -631,22 +666,25 @@ def word_to_pdf():
         input_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
         file.save(input_path)
 
-        try:
-            out_name = f"{uuid.uuid4().hex}.pdf"
-            output_path = os.path.join(app.config["GENERATED_FOLDER"], out_name)
+        out_name = f"{uuid.uuid4().hex}.pdf}"
+        output_path = os.path.join(app.config["GENERATED_FOLDER"], out_name)
 
-            # Conversión (Word → PDF)
-            convert(input_path, output_path)
+        try:
+            ok = convert_docx_to_pdf(input_path, output_path)
+
+            if not ok:
+                raise Exception("Error en la conversión")
 
             flash("Documento convertido correctamente.", "success")
             return render_template("word_to_pdf.html", download_file=out_name)
 
         except Exception as e:
             print(e)
-            flash("Error al convertir el archivo. Verificá que el .docx no esté dañado.", "error")
+            flash("Error al convertir el archivo. Intentalo nuevamente.", "error")
             return redirect(request.url)
 
     return render_template("word_to_pdf.html")
+
 
 
 # --------- 7) PDF A IMÁGENES ---------
