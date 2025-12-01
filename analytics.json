@@ -1,24 +1,28 @@
 {
-    "total_visits": 45,
+    "total_visits": 50,
     "daily": {
         "2025-11-26": 11,
         "2025-11-27": 30,
         "2025-11-28": 2,
-        "2025-11-29": 2
+        "2025-11-29": 2,
+        "2025-11-30": 1,
+        "2025-12-01": 4
     },
     "weekly": {
-        "2025-W47": 45
+        "2025-W47": 45,
+        "2025-W48": 5
     },
     "monthly": {
-        "2025-11": 45
+        "2025-11": 46,
+        "2025-12": 4
     },
     "yearly": {
-        "2025": 45
+        "2025": 50
     },
     "tools": {
         "image_to_jpg": 1,
         "remove-background": 2,
-        "image-to-icon": 9,
+        "image-to-icon": 10,
         "image-to-png": 14,
         "pdf-to-images": 2,
         "word-counter": 2,
@@ -26,7 +30,8 @@
         "merge-pdfs": 9,
         "video-downloader": 1,
         "password-generator": 1,
-        "word-to-pdf": 1
+        "word-to-pdf": 1,
+        "vocal-remover": 2
     },
     "history": [
         {
@@ -251,6 +256,31 @@
         },
         {
             "date": "2025-11-29 01:41:41",
+            "ip": "127.0.0.1",
+            "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0"
+        },
+        {
+            "date": "2025-11-30 15:23:56",
+            "ip": "127.0.0.1",
+            "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0"
+        },
+        {
+            "date": "2025-12-01 16:06:48",
+            "ip": "127.0.0.1",
+            "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0"
+        },
+        {
+            "date": "2025-12-01 16:07:45",
+            "ip": "127.0.0.1",
+            "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0"
+        },
+        {
+            "date": "2025-12-01 16:07:46",
+            "ip": "127.0.0.1",
+            "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0"
+        },
+        {
+            "date": "2025-12-01 16:07:46",
             "ip": "127.0.0.1",
             "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0"
         }
