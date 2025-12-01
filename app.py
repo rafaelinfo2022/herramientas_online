@@ -991,12 +991,26 @@ def remove_background():
 
     return render_template("remove_background.html")
 
-
 # --------- 13) PDF A EXCEL (CON OCR DEFINITIVO) ---------
+
+import platform
+import pytesseract
+from pdf2image import convert_from_path
+import pandas as pd
 
 @app.route("/pdf-ocr-excel", methods=["GET", "POST"])
 def pdf_ocr_excel():
     register_tool("pdf-ocr-excel")
+
+    # Detectar sistema operativo
+    system = platform.system()
+
+    # Configurar tesseract según el SO
+    if system == "Windows":
+        pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+    else:
+        pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+
     if request.method == "POST":
         file = request.files.get("file")
 
@@ -1013,15 +1027,20 @@ def pdf_ocr_excel():
         file.save(input_path)
 
         try:
-            # Convertir PDF a imágenes
-            pages = convert_from_path(input_path, dpi=300, poppler_path=r"C:/poppler/Library/bin")
+            # PDF → Imágenes según el SO
+            if system == "Windows":
+                poppler_path = r"C:\poppler\Library\bin"
+                pages = convert_from_path(input_path, dpi=300, poppler_path=poppler_path)
+            else:
+                pages = convert_from_path(input_path, dpi=300)
 
             dataframes = []
+
             for page in pages:
                 # OCR
                 ocr_text = pytesseract.image_to_string(page)
 
-                # Convertir a tabla simple por líneas
+                # Convertir texto a tabla simple
                 rows = [line.strip().split() for line in ocr_text.split("\n") if line.strip()]
 
                 if rows:
@@ -1032,7 +1051,7 @@ def pdf_ocr_excel():
                 flash("No se pudo extraer ninguna tabla del PDF.", "error")
                 return redirect(request.url)
 
-            # Guardar a Excel
+            # Guardar en Excel
             out_name = f"{uuid.uuid4().hex}_ocr.xlsx"
             output_path = os.path.join(app.config["GENERATED_FOLDER"], out_name)
 
@@ -1044,11 +1063,12 @@ def pdf_ocr_excel():
             return render_template("pdf_ocr_excel.html", download_file=out_name)
 
         except Exception as e:
-            print("ERROR:", e)
+            print("ERROR OCR:", e)
             flash("Error al procesar el PDF con OCR.", "error")
             return redirect(request.url)
 
     return render_template("pdf_ocr_excel.html")
+
 
 
 # --------- 14) DIVIDIR PDF: TODO EN UNO ---------
