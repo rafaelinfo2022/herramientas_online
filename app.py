@@ -43,13 +43,23 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY")
 app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 1024 * 16  # 16 GB (Prácticamente ilimitado para local)
 
 # Ruta correcta de tu instalación de Tesseract OCR
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+def configure_tesseract():
+    env_path = os.getenv("TESSERACT_CMD")
+    if env_path:
+        pytesseract.pytesseract.tesseract_cmd = env_path
+        return
+
+    if platform.system() == "Windows":
+        pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+    else:
+        pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+
+
+configure_tesseract()
 
 # 🔐 Configuración de administrador
 ADMIN_USER = os.getenv("ADMIN_USER")
 ADMIN_PASS_HASH = os.getenv("ADMIN_PASS_HASH")
-
-
 
 @app.errorhandler(413)
 def request_entity_too_large(error):
@@ -62,12 +72,6 @@ GENERATED_FOLDER = os.path.join(BASE_DIR, "static", "generated")
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(GENERATED_FOLDER, exist_ok=True)
-
-
-
-# Detectar sistema operativo
-import platform
-import os
 
 IS_WINDOWS = platform.system() == "Windows"
 
@@ -989,8 +993,6 @@ def pdf_ocr_excel():
 
 
 # --------- 14) DIVIDIR PDF: TODO EN UNO ---------
-
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
 @app.route("/pdf-split", methods=["GET", "POST"])
 def pdf_split():
