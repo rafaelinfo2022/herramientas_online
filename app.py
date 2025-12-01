@@ -619,27 +619,35 @@ def convert_docx_to_pdf(input_path, output_path):
     try:
         system = platform.system()
 
-        # 🟦 WINDOWS
         if system == "Windows":
-            try:
-                convert_windows(input_path, output_path)
-                return True
-            except Exception as e:
-                print("Error en Windows con docx2pdf:", e)
-                return False
+            convert_windows(input_path, output_path)
+            return True
 
-        # 🟩 LINUX → Hostinger
+        # Linux (Hostinger)
         else:
+            outdir = os.path.dirname(output_path)
+
             cmd = [
                 "soffice",
                 "--headless",
                 "--convert-to", "pdf",
-                "--outdir", os.path.dirname(output_path),
+                "--outdir", outdir,
                 input_path
             ]
 
             subprocess.run(cmd, check=True)
-            return True
+
+            # PDF generado con nombre original del DOCX
+            original_name = os.path.splitext(os.path.basename(input_path))[0] + ".pdf"
+            generated_pdf_path = os.path.join(outdir, original_name)
+
+            # Renombrar al UUID output_path
+            if os.path.exists(generated_pdf_path):
+                os.rename(generated_pdf_path, output_path)
+                return True
+            else:
+                print("NO SE ENCONTRÓ PDF GENERADO:", generated_pdf_path)
+                return False
 
     except Exception as e:
         print("Error general conversión:", e)
