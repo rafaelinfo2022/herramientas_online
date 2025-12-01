@@ -696,9 +696,13 @@ def word_to_pdf():
 
 
 # --------- 7) PDF A IMÁGENES ---------
+import platform
+
+# --------- 7) PDF A IMÁGENES ---------
 @app.route("/pdf-to-images", methods=["GET", "POST"])
 def pdf_to_images():
     register_tool("pdf-to-images")
+
     if request.method == "POST":
         file = request.files.get("file")
 
@@ -716,10 +720,18 @@ def pdf_to_images():
         file.save(input_path)
 
         try:
-            out_images = []
-            poppler_path = r"C:\poppler\Library\bin"  # ← CAMBIAR si lo instalaste en otra ruta
+            system = platform.system()
 
-            pages = convert_from_path(input_path, dpi=200, poppler_path=poppler_path)
+            # WINDOWS: usar Poppler de tu PC
+            if system == "Windows":
+                poppler_path = r"C:\poppler\Library\bin"
+                pages = convert_from_path(input_path, dpi=200, poppler_path=poppler_path)
+
+            # LINUX (Hostinger): NO usar poppler_path
+            else:
+                pages = convert_from_path(input_path, dpi=200)
+
+            out_images = []
 
             for i, page in enumerate(pages):
                 out_name = f"{uuid.uuid4().hex}_page_{i+1}.jpg"
@@ -731,11 +743,12 @@ def pdf_to_images():
             return render_template("pdf_to_images.html", images=out_images)
 
         except Exception as e:
-            print(e)
+            print("ERROR PDF2IMAGE:", e)
             flash("Error al convertir el PDF. Verificá que el archivo no esté dañado.", "error")
             return redirect(request.url)
 
     return render_template("pdf_to_images.html")
+
 
 
 # --------- 8) CONTADOR DE PALABRAS ---------
