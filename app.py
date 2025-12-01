@@ -666,7 +666,7 @@ def word_to_pdf():
         input_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
         file.save(input_path)
 
-        out_name = f"{uuid.uuid4().hex}.pdf}"
+        out_name = f"{uuid.uuid4().hex}.pdf"
         output_path = os.path.join(app.config["GENERATED_FOLDER"], out_name)
 
         try:
