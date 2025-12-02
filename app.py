@@ -36,6 +36,39 @@ from PyPDF2 import PdfMerger
 import platform
 
 
+def get_ffmpeg_path():
+    # 1) Variable de entorno (por si querés sobreescribirla)
+    env_path = os.getenv("FFMPEG_PATH")
+    if env_path and os.path.exists(env_path):
+        return env_path
+
+    # 2) Windows
+    if os.name == "nt":
+        posibles = [
+            r"C:\ffmpeg\bin\ffmpeg.exe",
+            r"C:\Program Files\FFmpeg\bin\ffmpeg.exe",
+            r"C:\Program Files (x86)\FFmpeg\bin\ffmpeg.exe",
+        ]
+        for ruta in posibles:
+            if os.path.exists(ruta):
+                return ruta
+
+    # 3) Linux / VPS: instalación estándar
+    if os.path.exists("/usr/bin/ffmpeg"):
+        return "/usr/bin/ffmpeg"
+
+    # 4) Último intento: buscar en PATH
+    ffmpeg_in_path = shutil.which("ffmpeg")
+    if ffmpeg_in_path:
+        return ffmpeg_in_path
+
+    return None
+
+
+FFMPEG_PATH = get_ffmpeg_path()
+FFMPEG_AVAILABLE = FFMPEG_PATH is not None
+print("FFmpeg OK ->", FFMPEG_PATH, "FFMPEG_AVAILABLE =", FFMPEG_AVAILABLE)
+
 load_dotenv()  # Carga las variables desde el archivo .env
 
 app = Flask(__name__)
@@ -1733,42 +1766,6 @@ def vocal_remover():
 # DETECCIÓN MULTIPLATAFORMA DE FFMPEG
 # ============================
 import shutil
-
-def get_ffmpeg_path():
-    """
-    Devuelve la ruta de FFmpeg según el entorno.
-    - Si existe la variable de entorno FFMPEG_PATH, usa esa.
-    - En Windows prueba varias rutas típicas.
-    - En Linux/servidor usa el 'ffmpeg' del PATH.
-    """
-    # 1) Variable de entorno: permite configurarlo en el VPS o en Windows
-    env_path = os.getenv("FFMPEG_PATH")
-    if env_path and os.path.exists(env_path):
-        return env_path
-
-    # 2) Windows
-    if os.name == "nt":
-        posibles = [
-            r"C:\ffmpeg\bin\ffmpeg.exe",
-            r"C:\Program Files\FFmpeg\bin\ffmpeg.exe",
-            r"C:\Program Files (x86)\FFmpeg\bin\ffmpeg.exe",
-        ]
-        for ruta in posibles:
-            if os.path.exists(ruta):
-                return ruta
-
-    # 3) Linux / Otros: buscar 'ffmpeg' en el PATH
-    ffmpeg_in_path = shutil.which("ffmpeg")
-    if ffmpeg_in_path:
-        return ffmpeg_in_path
-
-    # 4) No encontrado
-    return None
-
-
-FFMPEG_PATH = get_ffmpeg_path()
-FFMPEG_AVAILABLE = FFMPEG_PATH is not None
-
 
 @app.route("/video_downloader", methods=["GET", "POST"])
 def video_downloader():
