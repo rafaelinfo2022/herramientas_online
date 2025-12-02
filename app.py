@@ -1838,6 +1838,8 @@ def video_info():
             "quiet": True,
             "no_warnings": True,
             "noplaylist": True,
+            "cookiefile": "/var/www/herramientas_online/cookies/cookies.txt",
+
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -1937,7 +1939,8 @@ def download_thread(url, fmt, temp_dir, download_id):
             "outtmpl": output,
             "quiet": False,
             "noplaylist": True,
-            "progress_hooks": [lambda d: progress_hook(d, download_id)]
+            "progress_hooks": [lambda d: progress_hook(d, download_id)],
+            "cookiefile": "/var/www/herramientas_online/cookies/cookies.txt",
         }
 
         if FFMPEG_AVAILABLE:
