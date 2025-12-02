@@ -1765,9 +1765,6 @@ def vocal_remover():
 # ================================
 # 20) DESCARGADOR DE VIDEOS (CORREGIDO)
 # ================================
-# ================================
-# 20) VIDEO DOWNLOADER (FINAL VPS + LOCAL)
-# ================================
 import os, uuid, time, json, shutil, tempfile, threading, subprocess
 from flask import request, jsonify, Response, flash, redirect, url_for, send_file, render_template
 import yt_dlp
@@ -1829,45 +1826,54 @@ def video_downloader_page():
 # ---------------------------------------------------
 @app.route("/video_info", methods=["POST"])
 def video_info():
-    url = request.json.get("url", "").strip()
-
-    if not url:
-        return {"error": "URL inválida"}, 400
-
     try:
+        data = request.get_json()
+        url = data.get("url", "").strip()
+
+        if not url:
+            return jsonify({"error": "URL inválida."}), 400
+
         ydl_opts = {
             "skip_download": True,
             "quiet": True,
-            "noplaylist": True,
             "no_warnings": True,
+            "noplaylist": True,
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
 
-        # Extraer formatos disponibles
-        formats = []
+        # --- FILTRAR FORMATOS ÚTILES ---
+        formatos = []
         for f in info.get("formats", []):
-            if f.get("height") and f.get("ext") in ["mp4", "webm", "mkv"]:
-                formats.append({
-                    "format_id": f.get("format_id"),
-                    "height": f.get("height"),
-                    "ext": f.get("ext"),
-                    "filesize": f.get("filesize")
-                })
+            height = f.get("height")
+            ext = f.get("ext")
 
-        formats = sorted(formats, key=lambda x: x["height"], reverse=True)
+            # ignorar formatos raros o sin resolución
+            if not height or not ext or ext not in ["mp4", "webm", "mkv"]:
+                continue
 
-        return {
-            "title": info.get("title"),
+            formatos.append({
+                "id": f.get("format_id"),
+                "height": height,
+                "ext": ext,
+                "filesize": f.get("filesize"),
+            })
+
+        # Ordenar por calidad
+        formatos = sorted(formatos, key=lambda x: x["height"], reverse=True)
+
+        return jsonify({
+            "title": info.get("title", "Sin título"),
             "duration": info.get("duration"),
             "thumbnail": info.get("thumbnail"),
-            "formats": formats
-        }
+            "formats": formatos
+        })
 
     except Exception as e:
-        print("❌ ERROR video_info:", e)
-        return {"error": "No se pudo obtener información del video"}, 500
+        print("❌ ERROR EN /video_info:", str(e))
+        return jsonify({"error": "No se pudo obtener información del video."}), 500
+
 
 
 # ---------------------------------------------------
