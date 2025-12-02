@@ -226,29 +226,78 @@
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 0 18px;
+                padding: 10px 16px;
+                gap: 10px;
+                flex-wrap: wrap; /* ★ IMPORTANTE PARA MÓVIL */
             }
+
 
             /* Contenedor derecho (Inicio + Menu) */
             .menu-buttons {
                 display: flex;
                 gap: 10px;
                 align-items: center;
+                flex-wrap: wrap;  /* permite bajar a segunda línea */
             }
+
 
             /* Botones */
             .menu-button a {
                 background: rgba(255,255,255,0.15);
-                padding: 6px 10px;
-                border-radius: 6px;
+                padding: 6px 12px;
+                border-radius: 8px;
                 color: white;
-                font-size: 15px;
-                font-weight: 600;
+                font-size: 14px;
                 display: flex;
                 align-items: center;
                 gap: 6px;
                 text-decoration: none;
+                white-space: nowrap;
             }
+
+            @media (max-width: 480px) {
+
+                header {
+                    padding: 4px 0 !important;   /* Antes 12px → ahora compacto */
+                }
+
+                .header-content {
+                    flex-direction: column;
+                    align-items: center;
+                    text-align: center;
+                    padding: 4px 10px !important; /* Reduce margen interno */
+                    gap: 4px !important;          /* Mucho menos espacio */
+                }
+
+                .menu-buttons {
+                    width: 100%;
+                    justify-content: center;
+                    margin-top: -2px !important;  /* Sube los botones */
+                    gap: 6px !important;          /* Reduce separación */
+                }
+
+                .header-content h1 a {
+                    font-size: 18px !important;   /* Achica el logo */
+                }
+
+
+                .menu-button a {
+                    flex: 1;                 /* Ocupan mismo ancho */
+                    text-align: center;
+                    justify-content: center; /* Icono centrado */
+                    padding: 6px 10px !important;
+                    font-size: 13px !important;
+                }
+
+                h1 a {
+                    font-size: 20px; /* Logo se achica */
+                }
+            }
+
+.menu-button a:hover {
+    background: rgba(255,255,255,0.3);
+}
+
 
             .menu-button a:hover {
                 background: rgba(255,255,255,0.3);
