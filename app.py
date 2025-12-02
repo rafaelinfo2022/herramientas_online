@@ -1770,6 +1770,7 @@ import shutil
 @app.route("/video_downloader", methods=["GET", "POST"])
 def video_downloader():
     register_tool("video-downloader")
+
     if request.method == "POST":
         url = request.form.get("url", "").strip()
         fmt = request.form.get("format", "video")
@@ -1781,9 +1782,9 @@ def video_downloader():
         unique_id = uuid.uuid4().hex
         temp_dir = None
         downloaded_path = None
-        
+
         try:
-            # Crear directorio temporal manualmente para mejor control
+            # Crear directorio temporal
             temp_dir = tempfile.mkdtemp()
 
             # --------- CONFIGURACIÓN SEGÚN FORMATO ---------
@@ -1796,7 +1797,6 @@ def video_downloader():
                         "ffmpeg_location": FFMPEG_PATH,
                     }
                 else:
-                    # Sin FFmpeg: que baje el mejor MP4 que pueda sin mezclar
                     opts = {
                         "format": "best[ext=mp4]/best",
                         "outtmpl": os.path.join(temp_dir, f"{unique_id}_%(title)s.%(ext)s"),
@@ -1816,7 +1816,6 @@ def video_downloader():
                         ]
                     }
                 else:
-                    # Sin FFmpeg: intentar bajar audio tal cual (m4a / webm, etc.)
                     opts = {
                         "format": "bestaudio[ext=m4a]/bestaudio/best",
                         "outtmpl": os.path.join(temp_dir, f"{unique_id}_%(title)s.%(ext)s"),
@@ -1842,29 +1841,26 @@ def video_downloader():
                     flash("No se pudo obtener la información del video. Probá con otra URL.", "error")
                     return redirect(url_for("video_downloader"))
 
-                # Archivo descargado (nombre base)
                 downloaded_path = ydl.prepare_filename(info)
 
-                # Si es audio + FFmpeg, el postprocessor genera .mp3
                 if fmt == "audio" and FFMPEG_AVAILABLE:
                     base, _ = os.path.splitext(downloaded_path)
                     downloaded_path = base + ".mp3"
 
-            # Verificar que el archivo existe
+            # Verificar archivo generado
             if not os.path.exists(downloaded_path):
-                # Buscar cualquier archivo que comience con el unique_id
                 for file in os.listdir(temp_dir):
                     if file.startswith(unique_id):
                         downloaded_path = os.path.join(temp_dir, file)
                         break
                 else:
-                    flash("Ocurrió un problema al generar el archivo de salida.", "error")
+                    flash("Ocurrió un problema al generar el archivo.", "error")
                     return redirect(url_for("video_downloader"))
 
-            # Nombre de descarga “limpio”
+            # Nombre limpio
             original_title = info.get('title', 'video')
             safe_title = "".join(c for c in original_title if c.isalnum() or c in (' ', '-', '_')).rstrip()
-            
+
             if fmt == "video":
                 ext = os.path.splitext(downloaded_path)[1] or ".mp4"
                 download_name = f"{safe_title}{ext}"
@@ -1872,26 +1868,24 @@ def video_downloader():
                 ext = ".mp3" if FFMPEG_AVAILABLE else os.path.splitext(downloaded_path)[1]
                 download_name = f"{safe_title}{ext}"
 
-            # Copiar el archivo a GENERATED_FOLDER
+            # Copiar a carpeta segura
             safe_copy_path = os.path.join(app.config["GENERATED_FOLDER"], f"{unique_id}_{download_name}")
             shutil.copy2(downloaded_path, safe_copy_path)
 
-            # Limpiar archivo temporal
             try:
                 if os.path.exists(downloaded_path):
                     os.remove(downloaded_path)
             except Exception as e:
-                print(f"⚠️  No se pudo eliminar archivo temporal: {e}")
+                print("⚠️ Error eliminando archivo temporal:", e)
 
-            # Enviar la copia segura
+            # Enviar archivo
             response = send_file(
                 safe_copy_path,
                 as_attachment=True,
                 download_name=download_name,
-                mimetype='application/octet-stream'
+                mimetype="application/octet-stream"
             )
 
-            # Limpieza al cerrar la respuesta
             @response.call_on_close
             def cleanup():
                 try:
@@ -1900,38 +1894,47 @@ def video_downloader():
                     if temp_dir and os.path.exists(temp_dir):
                         shutil.rmtree(temp_dir, ignore_errors=True)
                 except Exception as e:
-                    print(f"⚠️  Error en limpieza: {e}")
+                    print("⚠️ Limpieza fallida:", e)
 
             return response
 
         except Exception as e:
             print("[VIDEO_DOWNLOADER] ERROR:", e)
 
-            # Limpieza en caso de error
+            # Limpieza en error
             try:
                 if downloaded_path and os.path.exists(downloaded_path):
                     os.remove(downloaded_path)
                 if temp_dir and os.path.exists(temp_dir):
                     shutil.rmtree(temp_dir, ignore_errors=True)
             except Exception as cleanup_error:
-                print(f"⚠️  Error limpiando en excepción: {cleanup_error}")
+                print("⚠️ Error limpiando tras excepción:", cleanup_error)
 
-            # Mensajes de error específicos
+            # --------- MANEJO DE ERRORES ESPECÍFICOS ---------
             error_msg = str(e).lower()
-            if "ffmpeg" in error_msg and "not found" in error_msg or "not installed" in error_msg:
+
+            if "ffmpeg" in error_msg and ("not found" in error_msg or "not installed" in error_msg):
                 flash("Error: FFmpeg no está disponible en el servidor.", "error")
+
+            elif "sign in to confirm you're not a bot" in error_msg or "signin" in error_msg:
+                flash("YouTube bloqueó la descarga por detección automática. Probá con otro video o más tarde.", "error")
+
             elif "unable to download webpage" in error_msg:
                 flash("No se pudo acceder a la URL. Verificá que sea válida y pública.", "error")
+
             elif "private" in error_msg:
                 flash("El video es privado o no está disponible.", "error")
+
             elif "copyright" in error_msg:
                 flash("El contenido está protegido por derechos de autor.", "error")
+
             else:
                 flash("Ocurrió un error al procesar la descarga. Probá con otra URL.", "error")
-            
+
             return redirect(url_for('video_downloader'))
 
     return render_template("video_downloader.html")
+
 
 
 

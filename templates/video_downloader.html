@@ -10,8 +10,7 @@
             Compatible con YouTube, Facebook, Instagram y más.
         </p>
 
-
-        {% if not FFMPEG_AVAILABLE %}
+        {% if false %}
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
             <i class="bi bi-exclamation-triangle"></i>
             <strong>Nota:</strong> FFmpeg no detectado. La calidad podría limitarse.
@@ -85,7 +84,15 @@
             btn.disabled = true;
             btn.innerHTML = '⬇️ Iniciando...';
             loader.style.display = "block";
+
+            // 🔥 OPCIÓN 1: Ocultar loader automáticamente a los 3 segundos
+            setTimeout(() => {
+                loader.style.display = "none";
+                btn.disabled = false;
+                btn.innerHTML = '⬇️ Descargar';
+            }, 3000);
         }
     });
 </script>
+
 {% endblock %}
