@@ -22,9 +22,6 @@
 
     <link rel="icon" href="{{ url_for('static', filename='img/icons/favicon.png') }}">
 
-
-
-
         <style>
             html, body {
                 overflow-x: hidden !important;
@@ -224,6 +221,56 @@
                 }
             }
 
+            /* ===== HEADER FIX RESPONSIVE ===== */
+            .header-content {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0 18px;
+            }
+
+            /* Contenedor derecho (Inicio + Menu) */
+            .menu-buttons {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+
+            /* Botones */
+            .menu-button a {
+                background: rgba(255,255,255,0.15);
+                padding: 6px 10px;
+                border-radius: 6px;
+                color: white;
+                font-size: 15px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                text-decoration: none;
+            }
+
+            .menu-button a:hover {
+                background: rgba(255,255,255,0.3);
+            }
+
+            /* ----- MOBILE FIX ----- */
+            @media (max-width: 600px) {
+                .header-content h1 a {
+                    font-size: 18px;
+                    white-space: nowrap;
+                }
+
+                .menu-button a {
+                    font-size: 13px;
+                    padding: 6px 8px;
+                }
+
+                .menu-buttons {
+                    gap: 6px;
+                }
+            }
+
             /* ============================
             COLORES POR CATEGORÍA
             ============================ */
@@ -257,22 +304,22 @@
         <!-- LOGO -->
         <h1><a href="{{ url_for('index') }}">Convertilio.cloud</a></h1>
 
-        
         {% if request.endpoint != 'index' %}
-
-            <!-- BOTÓN INICIO -->
+        <div class="menu-buttons">
             <div class="menu-button start-btn">
                 <a href="{{ url_for('index') }}">
                     <i class="ri-home-4-line"></i> Inicio
                 </a>
             </div>
 
-            <!-- BOTÓN MENU -->
             <div class="menu-button apps-btn" id="appsBtn">
-                <i class="ri-apps-2-line"></i> Menu
+                <a style="cursor:pointer;">
+                    <i class="ri-apps-2-line"></i> Menu
+                </a>
             </div>
-
+        </div>
         {% endif %}
+
 
 
         </div>
