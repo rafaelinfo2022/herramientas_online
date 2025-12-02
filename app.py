@@ -1727,8 +1727,49 @@ def vocal_remover():
     return render_template("vocal_remover.html")
 
 # ================================
-# 20) DESCARGADOR DE VIDEO/AUDIO (YT-DLP) - CORREGIDO
+# 20) DESCARGADOR DE VIDEO/AUDIO (YT-DLP)
 # ================================
+# ============================
+# DETECCIÓN MULTIPLATAFORMA DE FFMPEG
+# ============================
+import shutil
+
+def get_ffmpeg_path():
+    """
+    Devuelve la ruta de FFmpeg según el entorno.
+    - Si existe la variable de entorno FFMPEG_PATH, usa esa.
+    - En Windows prueba varias rutas típicas.
+    - En Linux/servidor usa el 'ffmpeg' del PATH.
+    """
+    # 1) Variable de entorno: permite configurarlo en el VPS o en Windows
+    env_path = os.getenv("FFMPEG_PATH")
+    if env_path and os.path.exists(env_path):
+        return env_path
+
+    # 2) Windows
+    if os.name == "nt":
+        posibles = [
+            r"C:\ffmpeg\bin\ffmpeg.exe",
+            r"C:\Program Files\FFmpeg\bin\ffmpeg.exe",
+            r"C:\Program Files (x86)\FFmpeg\bin\ffmpeg.exe",
+        ]
+        for ruta in posibles:
+            if os.path.exists(ruta):
+                return ruta
+
+    # 3) Linux / Otros: buscar 'ffmpeg' en el PATH
+    ffmpeg_in_path = shutil.which("ffmpeg")
+    if ffmpeg_in_path:
+        return ffmpeg_in_path
+
+    # 4) No encontrado
+    return None
+
+
+FFMPEG_PATH = get_ffmpeg_path()
+FFMPEG_AVAILABLE = FFMPEG_PATH is not None
+
+
 @app.route("/video_downloader", methods=["GET", "POST"])
 def video_downloader():
     register_tool("video-downloader")
@@ -1747,27 +1788,28 @@ def video_downloader():
         try:
             # Crear directorio temporal manualmente para mejor control
             temp_dir = tempfile.mkdtemp()
-            
-            # CONFIGURACIÓN MEJORADA
+
+            # --------- CONFIGURACIÓN SEGÚN FORMATO ---------
             if fmt == "video":
                 if FFMPEG_AVAILABLE:
                     opts = {
                         "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
                         "outtmpl": os.path.join(temp_dir, f"{unique_id}_%(title)s.%(ext)s"),
                         "merge_output_format": "mp4",
-                        "ffmpeg_location": FFMPEG_AVAILABLE,
+                        "ffmpeg_location": FFMPEG_PATH,
                     }
                 else:
+                    # Sin FFmpeg: que baje el mejor MP4 que pueda sin mezclar
                     opts = {
                         "format": "best[ext=mp4]/best",
                         "outtmpl": os.path.join(temp_dir, f"{unique_id}_%(title)s.%(ext)s"),
                     }
-            else:
+            else:  # AUDIO
                 if FFMPEG_AVAILABLE:
                     opts = {
                         "format": "bestaudio/best",
                         "outtmpl": os.path.join(temp_dir, f"{unique_id}_%(title)s.%(ext)s"),
-                        "ffmpeg_location": FFMPEG_AVAILABLE,
+                        "ffmpeg_location": FFMPEG_PATH,
                         "postprocessors": [
                             {
                                 "key": "FFmpegExtractAudio",
@@ -1777,12 +1819,13 @@ def video_downloader():
                         ]
                     }
                 else:
+                    # Sin FFmpeg: intentar bajar audio tal cual (m4a / webm, etc.)
                     opts = {
                         "format": "bestaudio[ext=m4a]/bestaudio/best",
                         "outtmpl": os.path.join(temp_dir, f"{unique_id}_%(title)s.%(ext)s"),
                     }
 
-            # CONFIGURACIÓN COMÚN
+            # --------- OPCIONES COMUNES ---------
             opts.update({
                 "noplaylist": True,
                 "quiet": True,
@@ -1790,6 +1833,9 @@ def video_downloader():
                 "ignoreerrors": False,
                 "restrictfilenames": True,
             })
+
+            print("[VIDEO_DOWNLOADER] Usando FFMPEG_PATH:", FFMPEG_PATH)
+            print("[VIDEO_DOWNLOADER] Opciones YT-DLP:", opts)
 
             # DESCARGA
             with yt_dlp.YoutubeDL(opts) as ydl:
@@ -1799,9 +1845,10 @@ def video_downloader():
                     flash("No se pudo obtener la información del video. Probá con otra URL.", "error")
                     return redirect(url_for("video_downloader"))
 
-                # Obtener el archivo descargado
+                # Archivo descargado (nombre base)
                 downloaded_path = ydl.prepare_filename(info)
-                
+
+                # Si es audio + FFmpeg, el postprocessor genera .mp3
                 if fmt == "audio" and FFMPEG_AVAILABLE:
                     base, _ = os.path.splitext(downloaded_path)
                     downloaded_path = base + ".mp3"
@@ -1817,35 +1864,37 @@ def video_downloader():
                     flash("Ocurrió un problema al generar el archivo de salida.", "error")
                     return redirect(url_for("video_downloader"))
 
-            # Obtener nombre seguro para el archivo
+            # Nombre de descarga “limpio”
             original_title = info.get('title', 'video')
             safe_title = "".join(c for c in original_title if c.isalnum() or c in (' ', '-', '_')).rstrip()
             
             if fmt == "video":
-                download_name = f"{safe_title}.mp4"
+                ext = os.path.splitext(downloaded_path)[1] or ".mp4"
+                download_name = f"{safe_title}{ext}"
             else:
-                download_name = f"{safe_title}.mp3"
+                ext = ".mp3" if FFMPEG_AVAILABLE else os.path.splitext(downloaded_path)[1]
+                download_name = f"{safe_title}{ext}"
 
-            # **SOLUCIÓN: Copiar el archivo a un lugar seguro antes de enviar**
+            # Copiar el archivo a GENERATED_FOLDER
             safe_copy_path = os.path.join(app.config["GENERATED_FOLDER"], f"{unique_id}_{download_name}")
             shutil.copy2(downloaded_path, safe_copy_path)
 
-            # **LIMPIAR ARCHIVO TEMPORAL INMEDIATAMENTE**
+            # Limpiar archivo temporal
             try:
                 if os.path.exists(downloaded_path):
                     os.remove(downloaded_path)
             except Exception as e:
                 print(f"⚠️  No se pudo eliminar archivo temporal: {e}")
 
-            # Enviar desde la copia segura
+            # Enviar la copia segura
             response = send_file(
-                safe_copy_path, 
-                as_attachment=True, 
+                safe_copy_path,
+                as_attachment=True,
                 download_name=download_name,
                 mimetype='application/octet-stream'
             )
 
-            # **LIMPIAR LA COPIA SEGURA DESPUÉS DE ENVIAR**
+            # Limpieza al cerrar la respuesta
             @response.call_on_close
             def cleanup():
                 try:
@@ -1860,8 +1909,8 @@ def video_downloader():
 
         except Exception as e:
             print("[VIDEO_DOWNLOADER] ERROR:", e)
-            
-            # **LIMPIAR EN CASO DE ERROR**
+
+            # Limpieza en caso de error
             try:
                 if downloaded_path and os.path.exists(downloaded_path):
                     os.remove(downloaded_path)
@@ -1872,8 +1921,8 @@ def video_downloader():
 
             # Mensajes de error específicos
             error_msg = str(e).lower()
-            if "ffmpeg" in error_msg and "not installed" in error_msg:
-                flash("Error: FFmpeg no está disponible. Se necesitan codecs adicionales para procesar este video.", "error")
+            if "ffmpeg" in error_msg and "not found" in error_msg or "not installed" in error_msg:
+                flash("Error: FFmpeg no está disponible en el servidor.", "error")
             elif "unable to download webpage" in error_msg:
                 flash("No se pudo acceder a la URL. Verificá que sea válida y pública.", "error")
             elif "private" in error_msg:
@@ -1886,6 +1935,7 @@ def video_downloader():
             return redirect(url_for('video_downloader'))
 
     return render_template("video_downloader.html")
+
 
 
 # --------- 21) REDIMENSIONAR IMAGEN ---------
