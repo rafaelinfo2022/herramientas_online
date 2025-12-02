@@ -1167,7 +1167,36 @@ def pdf_split():
 
 
 # --------- 15) COMPRESOR DE PDF ---------
-GS_PATH = r"C:\Program Files\gs\gs10.06.0\bin\gswin64c.exe"
+# --------- 15) COMPRESOR DE PDF ---------
+import shutil
+import platform
+
+def get_gs_path():
+    """
+    Devuelve la ruta de Ghostscript según el entorno.
+    - Si existe la variable de entorno GS_PATH, usa esa.
+    - En Windows, usa la ruta por defecto que ya tenés.
+    - En Linux/servidor, intenta usar el ejecutable 'gs'.
+    """
+    # 1) Variable de entorno (por si querés configurarlo en el VPS)
+    env_path = os.getenv("GS_PATH")
+    if env_path:
+        return env_path
+
+    # 2) Windows
+    if os.name == "nt":
+        return r"C:\Program Files\gs\gs10.06.0\bin\gswin64c.exe"
+
+    # 3) Linux / Otros: buscar 'gs' en el PATH
+    gs_in_path = shutil.which("gs")
+    if gs_in_path:
+        return gs_in_path
+
+    # 4) Último recurso: nombre plano (si está en PATH)
+    return "gs"
+
+
+GS_PATH = get_gs_path()
 
 
 @app.route("/pdf-compress", methods=["GET", "POST"])
@@ -1194,14 +1223,18 @@ def pdf_compress():
 
         # Calidad de compresión
         QUALITY_MAP = {
-            "low": "/screen",       # Más comprimido, menor calidad
-            "medium": "/ebook",     # Equilibrado
-            "high": "/printer"      # Mejor calidad, menos compresión
+            "low": "/screen",    # Más comprimido, menor calidad
+            "medium": "/ebook",  # Equilibrado
+            "high": "/printer"   # Mejor calidad, menos compresión
         }
 
         gs_quality = QUALITY_MAP.get(quality, "/ebook")
 
         try:
+            # Seguridad: verificar que tengamos Ghostscript
+            if not GS_PATH:
+                raise RuntimeError("Ghostscript no encontrado. Revisá la instalación.")
+
             # Ejecutar Ghostscript
             gs_cmd = [
                 GS_PATH,
@@ -1222,10 +1255,11 @@ def pdf_compress():
 
         except Exception as e:
             print("ERROR COMPRESS:", e)
-            flash("Error al comprimir el PDF. Verificá la instalación de Ghostscript.", "error")
+            flash("Error al comprimir el PDF. Verificá la instalación de Ghostscript en el servidor.", "error")
             return redirect(request.url)
 
     return render_template("pdf_compress.html")
+
 
 
 # --------- 16) COMPRESOR DE VIDEO (VERSIÓN PRO MAX) ---------
