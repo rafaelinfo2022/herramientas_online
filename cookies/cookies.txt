@@ -1,4 +1,8 @@
-﻿.youtube.com	false	/	true	1764763246	GPS	1
+# Netscape HTTP Cookie File
+# https://curl.se/docs/http-cookies.html
+# https://github.com/rafaelinfo2022/herramientas_online
+
+.youtube.com	false	/	true	1764763246	GPS	1
 .youtube.com	false	/	true	0	YSC	Wh-Uy6aLM-k
 .youtube.com	false	/	true	1780313506.265	VISITOR_INFO1_LIVE	XPLqbAE841Y
 .youtube.com	false	/	true	1780313506.265	VISITOR_PRIVACY_METADATA	CgJBUhIEGgAgNw%3D%3D
