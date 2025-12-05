@@ -1838,9 +1838,12 @@ def video_info():
             "quiet": True,
             "no_warnings": True,
             "noplaylist": True,
-            "cookiefile": "/var/www/herramientas_online/cookies/cookies.txt",
-
         }
+
+        # Usar cookies SOLO para YouTube
+        if "youtube.com" in url or "youtu.be" in url:
+            ydl_opts["cookiefile"] = "/var/www/herramientas_online/cookies/cookies.txt"
+
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -1940,8 +1943,11 @@ def download_thread(url, fmt, temp_dir, download_id):
             "quiet": False,
             "noplaylist": True,
             "progress_hooks": [lambda d: progress_hook(d, download_id)],
-            "cookiefile": "/var/www/herramientas_online/cookies/cookies.txt",
         }
+
+        # Usar cookies SOLO para YouTube
+        if "youtube.com" in url or "youtu.be" in url:
+            ydl_opts["cookiefile"] = "/var/www/herramientas_online/cookies/cookies.txt"
 
         if FFMPEG_AVAILABLE:
             ydl_opts["ffmpeg_location"] = FFMPEG_PATH
