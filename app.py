@@ -1842,7 +1842,10 @@ def video_info():
 
         # Usar cookies SOLO para YouTube
         if "youtube.com" in url or "youtu.be" in url:
-            ydl_opts["cookiefile"] = "/var/www/herramientas_online/cookies/cookies.txt"
+            # Ruta absoluta dinámica
+            cookie_path = os.path.join(BASE_DIR, "cookies", "cookies.txt")
+            if os.path.exists(cookie_path):
+                ydl_opts["cookiefile"] = cookie_path
 
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -1947,7 +1950,9 @@ def download_thread(url, fmt, temp_dir, download_id):
 
         # Usar cookies SOLO para YouTube
         if "youtube.com" in url or "youtu.be" in url:
-            ydl_opts["cookiefile"] = "/var/www/herramientas_online/cookies/cookies.txt"
+            cookie_path = os.path.join(BASE_DIR, "cookies", "cookies.txt")
+            if os.path.exists(cookie_path):
+                ydl_opts["cookiefile"] = cookie_path
 
         if FFMPEG_AVAILABLE:
             ydl_opts["ffmpeg_location"] = FFMPEG_PATH
