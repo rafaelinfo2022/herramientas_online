@@ -1762,16 +1762,38 @@ def vocal_remover():
     return render_template("vocal_remover.html")
 
 
-# ================================
-# 20) DESCARGADOR DE VIDEOS (CORREGIDO)
-# ================================
-import os, uuid, time, json, shutil, tempfile, threading, subprocess
-from flask import request, jsonify, Response, flash, redirect, url_for, send_file, render_template
+# ==========================================================
+# DESCARGADOR DE VIDEOS (CORREGIDO PARA ENTORNO WEB)
+# ==========================================================
+import os, uuid, time, json, shutil, tempfile, threading
+from flask import Flask, request, jsonify, Response, flash, redirect, url_for, send_file, render_template
 import yt_dlp
-from PIL import Image
+# from PIL import Image # No es necesario si no se usa
+
+# Crear el directorio si no existe
+if not os.path.exists(GENERATED_FOLDER):
+    os.makedirs(GENERATED_FOLDER)
+
+# Directorio de cookies (asumiendo que está dentro de BASE_DIR)
+COOKIES_DIR = os.path.join(BASE_DIR, "cookies")
+
+
+# ==========================================================
+# 2. GESTIÓN DE RECURSOS Y CONCURRENCIA (LA CORRECCIÓN MÁS IMPORTANTE)
+# ==========================================================
+
+# ADVERTENCIA: Esta variable global solo funciona si usas un solo proceso
+# (ej. el servidor de desarrollo de Flask, o Gunicorn con 1 worker).
+# En producción multi-proceso, DEBES usar Redis o una base de datos.
+DOWNLOAD_PROGRESS = {}
+
+# Lock para asegurar que la actualización de DOWNLOAD_PROGRESS es segura entre hilos.
+PROGRESS_LOCK = threading.Lock() 
+
 
 # ---------------------------------------------------
 # Detección MULTIPLATAFORMA de FFmpeg (VPS + Windows)
+# (Se mantiene tu excelente lógica)
 # ---------------------------------------------------
 def get_ffmpeg_path():
     # 1) Si el usuario define FFmpeg por variable de entorno
@@ -1807,10 +1829,34 @@ FFMPEG_PATH = get_ffmpeg_path()
 FFMPEG_AVAILABLE = FFMPEG_PATH is not None
 print(">>> FFmpeg =", FFMPEG_PATH, "| Disponible =", FFMPEG_AVAILABLE)
 
+
 # ---------------------------------------------------
-# Diccionario global de progreso
+# Hook del progreso (Modificado con Lock)
 # ---------------------------------------------------
-DOWNLOAD_PROGRESS = {}
+def progress_hook(d, download_id):
+    # Protege el acceso al diccionario global
+    with PROGRESS_LOCK: 
+        if download_id not in DOWNLOAD_PROGRESS:
+             DOWNLOAD_PROGRESS[download_id] = {}
+             
+        if d["status"] == "downloading":
+            try:
+                percent = float(d.get("_percent_str", "0%").replace("%", "").strip())
+            except:
+                percent = 0
+
+            DOWNLOAD_PROGRESS[download_id].update({
+                "status": "downloading",
+                "progress": percent,
+                "speed": d.get("_speed_str", ""),
+                "eta": d.get("_eta_str", "")
+            })
+
+        elif d["status"] == "finished":
+            DOWNLOAD_PROGRESS[download_id].update({
+                "status": "processing",
+                "progress": 100
+            })
 
 
 # ---------------------------------------------------
@@ -1818,84 +1864,103 @@ DOWNLOAD_PROGRESS = {}
 # ---------------------------------------------------
 @app.route("/video_downloader", methods=["GET"])
 def video_downloader_page():
+    # Asegúrate de que tu plantilla 'video_downloader.html' esté en la carpeta 'templates'
     return render_template("video_downloader.html")
 
 
-# ---------------------------------------------------
-# Obtener info del video
-# ---------------------------------------------------
 @app.route("/video_info", methods=["POST"])
 def video_info():
-    try:
-        data = request.get_json()
-        url = data.get("url", "").strip()
+    """
+    Ruta que extrae la metadata de un video (título, miniatura) y una lista
+    de formatos de video disponibles para la descarga, excluyendo los streams
+    solo de audio, ya que el frontend ofrece la opción MP3 por separado.
+    """
+    # 1. Obtener la URL del request
+    data = request.get_json()
+    url = data.get("url")
 
-        if not url:
-            return jsonify({"error": "URL inválida."}), 400
+    if not url:
+        return jsonify({"error": "URL no proporcionada."}), 400
 
-        ydl_opts = {
-            "skip_download": True,
-            "quiet": True,
-            "no_warnings": True,
-            "noplaylist": True,
-        }
+    # 2. Definir las opciones para extraer información sin descargar
+    ydl_opts = {
+        'skip_download': True,      # No descargar nada
+        'quiet': True,              # No imprimir salida a la consola
+        'format': 'best',           # Utilizar el mejor formato de forma predeterminada (para la info)
+        'force_generic_extractor': True, # Mejora la compatibilidad
+    }
 
-        # Usar cookies SOLO para YouTube
-        if "youtube.com" in url or "youtu.be" in url:
-            # Ruta absoluta dinámica
-            cookie_path = os.path.join(BASE_DIR, "cookies", "cookies.txt")
-            if os.path.exists(cookie_path):
-                ydl_opts["cookiefile"] = cookie_path
-
-
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+    # 3. Extraer información del video
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        try:
+            # download=False solo extrae la metadata
             info = ydl.extract_info(url, download=False)
+        except yt_dlp.utils.DownloadError as e:
+            # Manejo de errores de yt-dlp (ej. video no disponible o URL no válida)
+            error_msg = str(e).split(': ')[-1]
+            return jsonify({"error": f"Error de yt-dlp: {error_msg}"}), 400
 
-        # --- FILTRAR FORMATOS ÚTILES ---
-        formatos = []
-        for f in info.get("formats", []):
-            height = f.get("height")
-            ext = f.get("ext")
+    # --- 4. FILTRAR FORMATOS DE VIDEO ÚTILES ---
+    formatos = []
+    
+    # Recorrer todos los formatos detectados por yt-dlp
+    for f in info.get("formats", []):
+        format_id = f.get("format_id")
+        height = f.get("height")
+        ext = f.get("ext")
+        vcodec = f.get("vcodec")
+        acodec = f.get("acodec")
 
-            # ignorar formatos raros o sin resolución
-            if not height or not ext or ext not in ["mp4", "webm", "mkv"]:
-                continue
+        # Filtro 1: Debe tener resolución (excluye streams solo de audio y metadata sin altura)
+        if not height or height < 1:
+            continue
 
-            formatos.append({
-                "id": f.get("format_id"),
-                "height": height,
-                "ext": ext,
-                "filesize": f.get("filesize"),
-            })
-
-        # Ordenar por calidad
-        formatos = sorted(formatos, key=lambda x: x["height"], reverse=True)
-
-        return jsonify({
-            "title": info.get("title", "Sin título"),
-            "duration": info.get("duration"),
-            "thumbnail": info.get("thumbnail"),
-            "formats": formatos
+        # Filtro 2: Ignorar streams que son EXCLUSIVAMENTE de audio (vcodec='none' y acodec definido)
+        # Esto evita duplicar la opción "Audio MP3" en la lista de calidades de video.
+        if vcodec == 'none' and acodec != 'none':
+            continue
+        
+        # Filtro 3: Solo incluir formatos con extensiones de video comunes
+        if ext not in ["mp4", "webm", "mkv"]:
+            continue
+            
+        # Si pasa las comprobaciones, es un formato de video útil
+        formatos.append({
+            "id": format_id,
+            "height": height,
+            "ext": ext,
+            # El tamaño del archivo puede ser None para streams DASH (solo video o solo audio)
+            "filesize": f.get("filesize"), 
         })
 
-    except Exception as e:
-        print("❌ ERROR EN /video_info:", str(e))
-        return jsonify({"error": "No se pudo obtener información del video."}), 500
+    # 5. Ordenar por calidad (la resolución más alta primero)
+    formatos = sorted(formatos, key=lambda x: x["height"], reverse=True)
 
-
+    # 6. Devolver la metadata y la lista de formatos
+    return jsonify({
+        "title": info.get("title", "Sin título"),
+        "duration": info.get("duration"),
+        "thumbnail": info.get("thumbnail"),
+        "formats": formatos
+    })
 
 # ---------------------------------------------------
-# SSE: Canal de progreso en tiempo real
+# SSE: Canal de progreso en tiempo real (Modificado con Lock)
 # ---------------------------------------------------
 @app.route("/progress/<download_id>")
 def progress_stream(download_id):
 
     def stream():
         while True:
-            if download_id in DOWNLOAD_PROGRESS:
-                yield f"data: {json.dumps(DOWNLOAD_PROGRESS[download_id])}\n\n"
+            with PROGRESS_LOCK:
+                progress_data = DOWNLOAD_PROGRESS.get(download_id, None)
 
-                if DOWNLOAD_PROGRESS[download_id].get("status") in ["done", "error"]:
+            if progress_data:
+                # Enviar el progreso
+                yield f"data: {json.dumps(progress_data)}\n\n"
+
+                # Si está terminado o con error, salimos del bucle
+                if progress_data.get("status") in ["done", "error"]:
                     break
 
             time.sleep(0.5)
@@ -1904,20 +1969,23 @@ def progress_stream(download_id):
 
 
 # ---------------------------------------------------
-# Iniciar descarga (POST)
+# Iniciar descarga (POST) (Modificado a respuesta JSON/AJAX)
 # ---------------------------------------------------
 @app.route("/video_downloader", methods=["POST"])
 def video_downloader():
+    # Usamos request.form porque el JS envía un FormData
     url = request.form.get("url", "").strip()
     fmt = request.form.get("resolution")
 
-    if not url:
-        flash("Ingresá un enlace válido", "error")
-        return redirect(url_for("video_downloader_page"))
+    if not url or not fmt:
+        # El front-end espera JSON, no un redirect
+        return jsonify({"error": "Ingresá un enlace y seleccioná una calidad válidos."}), 400
 
     # ID único para el cliente
     download_id = uuid.uuid4().hex
-    DOWNLOAD_PROGRESS[download_id] = {"status": "starting", "progress": 0}
+    
+    with PROGRESS_LOCK:
+        DOWNLOAD_PROGRESS[download_id] = {"status": "starting", "progress": 0}
 
     # Carpeta temporal por descarga
     temp_dir = tempfile.mkdtemp()
@@ -1927,37 +1995,51 @@ def video_downloader():
                      args=(url, fmt, temp_dir, download_id),
                      daemon=True).start()
 
-    # Respuesta inmediata al navegador
-    response = jsonify({"ok": True})
+    # Respuesta inmediata al navegador con el ID de descarga
+    response = jsonify({"ok": True, "download_id": download_id})
     response.headers["X-Download-ID"] = download_id
-    return response
+    
+    # Se usa 202 Accepted para indicar que la solicitud fue aceptada para procesamiento
+    return response, 202 
 
 
 # ---------------------------------------------------
-# Lógica en segundo plano
+# Lógica en segundo plano (Mejorada para manejo de errores y rutas)
 # ---------------------------------------------------
 def download_thread(url, fmt, temp_dir, download_id):
 
+    def set_progress_error(message):
+        # Función auxiliar para reportar errores
+        with PROGRESS_LOCK:
+            if download_id in DOWNLOAD_PROGRESS:
+                 DOWNLOAD_PROGRESS[download_id].update({
+                    "status": "error",
+                    "message": message
+                })
+
     try:
-        output = os.path.join(temp_dir, "video.%(ext)s")
+        # Usamos el ID de descarga para el nombre del archivo temporal, evitando colisiones
+        output = os.path.join(temp_dir, f"{download_id}.%(ext)s")
 
         ydl_opts = {
             "outtmpl": output,
             "quiet": False,
             "noplaylist": True,
+            "no_warnings": True,
             "progress_hooks": [lambda d: progress_hook(d, download_id)],
+            "merge_output_format": "best" # Usar FFmpeg si es necesario para combinar video/audio
         }
 
-        # Usar cookies SOLO para YouTube
+        # Configuración de cookies y FFmpeg
         if "youtube.com" in url or "youtu.be" in url:
-            cookie_path = os.path.join(BASE_DIR, "cookies", "cookies.txt")
+            cookie_path = os.path.join(COOKIES_DIR, "cookies.txt")
             if os.path.exists(cookie_path):
                 ydl_opts["cookiefile"] = cookie_path
 
         if FFMPEG_AVAILABLE:
             ydl_opts["ffmpeg_location"] = FFMPEG_PATH
 
-        # Audio MP3
+        # Formato de audio MP3
         if fmt == "audio":
             ydl_opts["format"] = "bestaudio/best"
             if FFMPEG_AVAILABLE:
@@ -1966,117 +2048,109 @@ def download_thread(url, fmt, temp_dir, download_id):
                     "preferredcodec": "mp3",
                     "preferredquality": "192"
                 }]
+            
         else:
+            # Formato de video específico
             ydl_opts["format"] = fmt
 
-        # Detectar error de YouTube tipo "Sign in to confirm..."
-        def detect_bot_block(e):
-            msg = str(e).lower()
-            if "sign in to confirm you're not a bot" in msg or "confirm your age" in msg:
-                return True
-            return False
 
         # Ejecutar descarga
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            try:
-                info = ydl.extract_info(url, download=True)
-            except Exception as e:
-                if detect_bot_block(e):
-                    DOWNLOAD_PROGRESS[download_id] = {
-                        "status": "error",
-                        "message": "YouTube bloqueó esta descarga. Probá con otro video."
-                    }
-                    return
-                raise
+            info = ydl.extract_info(url, download=True)
 
-        # Archivo resultante
-        downloaded_file = ydl.prepare_filename(info)
+        # --- Encontrar, Mover y Renombrar el archivo ---
+        
+        # 1. Encontrar el archivo resultante (más robusto)
+        # Buscar el archivo real en la carpeta temporal (yt-dlp puede renombrar)
+        downloaded_file = None
+        for filename in os.listdir(temp_dir):
+            if filename.startswith(download_id) and os.path.isfile(os.path.join(temp_dir, filename)):
+                downloaded_file = os.path.join(temp_dir, filename)
+                break
 
-        if not os.path.exists(downloaded_file):
-            raise FileNotFoundError("Archivo no encontrado tras la descarga.")
+        if not downloaded_file:
+            raise FileNotFoundError("Archivo resultante no encontrado tras la descarga o post-procesamiento.")
 
-        # MP3 → renombrar final
-        if fmt == "audio":
-            final_name = f"{download_id}.mp3"
-        else:
-            ext = os.path.splitext(downloaded_file)[1]
-            final_name = f"{download_id}{ext}"
-
-        final_path = os.path.join(app.config["GENERATED_FOLDER"], final_name)
+        # 2. Generar nombre de usuario seguro y mover
+        video_title_safe = info.get("title", "video").replace(os.path.sep, "_").replace(":", "_").replace("|", "_").replace('"', "_").replace("'", "_")
+        _, ext = os.path.splitext(downloaded_file)
+        
+        # Nombre que el usuario verá
+        user_name = f"{video_title_safe}{ext}"
+        
+        # Nombre final para el servidor (incluye el ID para evitar colisiones)
+        final_name_on_server = f"{download_id}_{user_name}"
+        final_path = os.path.join(app.config["GENERATED_FOLDER"], final_name_on_server)
+        
         shutil.move(downloaded_file, final_path)
 
-        DOWNLOAD_PROGRESS[download_id] = {
-            "status": "done",
-            "progress": 100,
-            "file_path": final_path
-        }
+        with PROGRESS_LOCK:
+            DOWNLOAD_PROGRESS[download_id].update({
+                "status": "done",
+                "progress": 100,
+                "file_path": final_path,
+                "user_name": user_name # Guardamos el nombre amigable
+            })
 
     except Exception as e:
-        print("❌ ERROR:", e)
-        DOWNLOAD_PROGRESS[download_id] = {
-            "status": "error",
-            "message": str(e)
-        }
+        print("❌ ERROR en download_thread:", e)
+        set_progress_error(f"Error grave en el proceso: {str(e)}")
 
     finally:
-        # Limpiar carpeta temporal
-        threading.Thread(
-            target=lambda: (time.sleep(300), shutil.rmtree(temp_dir, ignore_errors=True)),
-            daemon=True
-        ).start()
-
-
-# ---------------------------------------------------
-# Hook del progreso
-# ---------------------------------------------------
-def progress_hook(d, download_id):
-    if d["status"] == "downloading":
+        # Limpiar carpeta temporal inmediatamente.
         try:
-            percent = float(d.get("_percent_str", "0%").replace("%", ""))
-        except:
-            percent = 0
-
-        DOWNLOAD_PROGRESS[download_id] = {
-            "status": "downloading",
-            "progress": percent,
-            "speed": d.get("_speed_str", ""),
-            "eta": d.get("_eta_str", "")
-        }
-
-    elif d["status"] == "finished":
-        DOWNLOAD_PROGRESS[download_id] = {
-            "status": "processing",
-            "progress": 100
-        }
+            shutil.rmtree(temp_dir, ignore_errors=True)
+        except Exception as e:
+            print(f"Error al limpiar la carpeta temporal {temp_dir}: {e}")
 
 
 # ---------------------------------------------------
-# Descargar archivo final
+# Descargar archivo final (Corregido para limpieza segura)
 # ---------------------------------------------------
 @app.route("/download_video/<download_id>")
 def download_video(download_id):
-    if download_id not in DOWNLOAD_PROGRESS:
-        flash("Descarga no encontrada.", "error")
+    
+    with PROGRESS_LOCK:
+        data = DOWNLOAD_PROGRESS.get(download_id)
+
+    if not data or data.get("status") != "done":
+        flash("Descarga no encontrada o no finalizada.", "error")
         return redirect(url_for("video_downloader_page"))
 
-    data = DOWNLOAD_PROGRESS[download_id]
     file_path = data.get("file_path")
+    user_name = data.get("user_name") # Usamos el nombre amigable
 
     if not file_path or not os.path.exists(file_path):
-        flash("Archivo no disponible", "error")
+        flash("Archivo no disponible (posiblemente eliminado por el proceso de limpieza).", "error")
+        return redirect(url_for("video_downloader_page"))
+        
+    try:
+        # Preparamos la respuesta de envío del archivo
+        response = send_file(file_path, as_attachment=True, download_name=user_name)
+    except Exception as e:
+        flash(f"Error al intentar enviar el archivo: {str(e)}", "error")
         return redirect(url_for("video_downloader_page"))
 
-    filename = os.path.basename(file_path)
-    user_name = filename.split("_")[-1] if "_" in filename else filename
+    # 🔥 CORRECCIÓN CRÍTICA: Llamar a la limpieza SOLO después de que la respuesta
+    # ha sido enviada al cliente. Esto es mucho más seguro que un hilo con sleep.
+    @response.call_on_close
+    def cleanup():
+        try:
+            # Un pequeño retraso para asegurar que el archivo fue enviado completamente
+            time.sleep(5) 
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                print(f"Limpieza de archivo final {file_path} completada.")
+            
+            # Limpiar el progreso del diccionario global
+            with PROGRESS_LOCK:
+                if download_id in DOWNLOAD_PROGRESS:
+                    del DOWNLOAD_PROGRESS[download_id]
+                    
+        except Exception as e:
+            print(f"Error en la limpieza de post-descarga para {file_path}: {e}")
 
-    # Limpieza después de envío
-    threading.Thread(
-        target=lambda: (time.sleep(60), os.remove(file_path)),
-        daemon=True
-    ).start()
-
-    return send_file(file_path, as_attachment=True, download_name=user_name)
-
+    return response
 
 
 

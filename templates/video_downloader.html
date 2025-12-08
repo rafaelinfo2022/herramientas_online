@@ -2,24 +2,81 @@
 {% block content %}
 
 <style>
-/* Evita que el input se salga del contenedor */
-#videoUrl {
-    max-width: 100%;
-    width: 100%;
-    box-sizing: border-box;
-}
+    /* Estilos de la tarjeta de cristal y gradientes */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
 
-/* Grupo donde están el input + botón */
-.input-group {
-    display: flex;
-    flex-wrap: nowrap;
-    width: 100%;
-}
+    .text-gradient {
+        background: linear-gradient(45deg, #007bff, #6610f2);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
 
-/* Para evitar que el botón “Cargar” rompa el diseño */
-.input-group .btn {
-    white-space: nowrap;
-}
+    .btn-gradient {
+        background: linear-gradient(45deg, #007bff, #6610f2);
+        border: none;
+        color: white;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+    }
+
+    .input-group-text {
+        background: linear-gradient(45deg, #007bff, #6610f2);
+        color: white;
+        border: none;
+    }
+
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+    }
+
+    /* Estilos para asegurar que el input se adapte */
+    #videoUrl {
+        max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Estilos Responsive para el Input Group */
+    @media (max-width: 576px) {
+        .glass-card {
+            margin: 10px;
+            padding: 15px !important;
+        }
+        
+        /* Apila el input y el botón verticalmente en móvil */
+        .input-group {
+            flex-direction: column;
+        }
+        
+        .input-group .input-group-text {
+            /* Mantiene el icono arriba del input */
+            border-radius: 0.375rem 0.375rem 0 0 !important;
+        }
+
+        .input-group .form-control {
+            /* Se une al icono */
+            border-radius: 0 0 0 0 !important;
+            margin-bottom: -1px;
+        }
+        
+        .input-group .btn {
+            /* El botón va abajo */
+            border-radius: 0 0 0.375rem 0.375rem !important;
+            width: 100%;
+        }
+    }
 </style>
 
 
@@ -30,7 +87,6 @@
             Descargar Videos Online (YouTube, Facebook, Instagram)
         </h1>
 
-        <!-- MENSAJES FLASH -->
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -43,15 +99,14 @@
         {% endif %}
         {% endwith %}
 
-        <!-- URL INPUT - CORREGIDO -->
         <div class="mb-3">
             <label class="fw-bold mb-2">1. Pegá el enlace del video</label>
             <div class="input-group" style="width: 100%;">
                 <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
                 <input type="url" id="videoUrl" class="form-control" 
-                       placeholder="https://www.youtube.com/watch?v=..." 
-                       autocomplete="off"
-                       style="min-width: 0; flex: 1 1 auto;">
+                        placeholder="https://www.youtube.com/watch?v=..." 
+                        autocomplete="off"
+                        style="min-width: 0; flex: 1 1 auto;">
                 <button class="btn btn-primary px-3" onclick="loadVideoInfo()">
                     <i class="bi bi-search"></i> Cargar
                 </button>
@@ -61,11 +116,10 @@
             </small>
         </div>
 
-        <!-- INFO DEL VIDEO (OCULTO AL INICIO) -->
         <div id="videoDetails" style="display:none;" class="mt-4 p-3 border rounded bg-light">
 
             <div class="d-flex align-items-center mb-3">
-                <img id="thumb" src="" style="width:120px;height:68px;object-fit:cover;border-radius:8px;margin-right:15px;">
+                <img id="thumb" src="" style="width:120px;height:68px;object-fit:cover;border-radius:8px;margin-right:15px;" alt="Miniatura del video">
                 <div style="flex: 1; min-width: 0;">
                     <h5 id="title" class="fw-bold m-0 text-truncate" style="font-size: 1rem;"></h5>
                     <span id="duration" class="text-muted small"></span>
@@ -77,7 +131,6 @@
                 <option disabled selected>Seleccionar formato...</option>
             </select>
 
-            <!-- FORMULARIO OCULTO PARA LA DESCARGA -->
             <form id="downloadForm" method="POST" action="/video_downloader" style="display:none;">
                 <input type="hidden" name="url" id="hiddenUrl">
                 <input type="hidden" name="resolution" id="hiddenResolution">
@@ -87,12 +140,11 @@
                 <i class="bi bi-download me-2"></i> Descargar
             </button>
 
-            <!-- PROGRESO -->
             <div id="progressBox" class="mt-4" style="display:none;">
                 <div class="text-center mb-1 fw-bold" id="progressStatus">Preparando descarga...</div>
                 <div class="progress" style="height: 25px;">
                     <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated d-flex align-items-center justify-content-center"
-                         role="progressbar" style="width:0%;">
+                            role="progressbar" style="width:0%;">
                         <span class="fw-bold">0%</span>
                     </div>
                 </div>
@@ -101,7 +153,6 @@
 
         </div>
 
-        <!-- INFORMACIÓN ADICIONAL -->
         <div class="mt-4 p-3 border rounded bg-light">
             <h6 class="fw-bold mb-2"><i class="bi bi-info-circle me-2"></i>¿Cómo funciona?</h6>
             <ol class="mb-0" style="padding-left: 1.2rem;">
@@ -144,6 +195,10 @@ function loadVideoInfo() {
     // Limpiar detalles previos
     document.getElementById("videoDetails").style.display = "none";
     document.getElementById("formatSelect").innerHTML = '<option disabled selected>Seleccionar formato...</option>';
+    // Esconde el progreso y muestra el botón de Descarga
+    document.getElementById("btnDownload").style.display = "block";
+    document.getElementById("progressBox").style.display = "none";
+
 
     fetch("/video_info", {
         method: "POST",
@@ -152,7 +207,12 @@ function loadVideoInfo() {
     })
     .then(r => {
         if (!r.ok) {
-            throw new Error(`Error ${r.status}: ${r.statusText}`);
+            // Intenta leer el error del cuerpo si es posible
+            return r.json().then(err => {
+                throw new Error(err.error || `Error ${r.status}: ${r.statusText}`);
+            }).catch(() => {
+                throw new Error(`Error ${r.status}: ${r.statusText}`);
+            });
         }
         return r.json();
     })
@@ -181,13 +241,13 @@ function loadVideoInfo() {
         audioOption.textContent = "🎵 Audio MP3 (Alta calidad)";
         select.appendChild(audioOption);
 
-        // VIDEO - Ordenar de mayor a menor calidad
+        // VIDEO - Ordenar de mayor a menor calidad (El backend ya lo hace, pero lo mantenemos por si acaso)
         if (data.formats && data.formats.length > 0) {
             data.formats.sort((a, b) => b.height - a.height);
             
             data.formats.forEach(f => {
                 let option = document.createElement("option");
-                option.value = f.format_id;
+                option.value = f.id; // Usar f.id que es el format_id
                 
                 // Calcular tamaño aproximado
                 let sizeText = "";
@@ -195,15 +255,17 @@ function loadVideoInfo() {
                     sizeText = ` (${formatBytes(f.filesize)})`;
                 }
                 
+                // Muestra la resolución y el formato (ej: 1080p (mp4))
                 option.textContent = `🎬 ${f.height}p (${f.ext})${sizeText}`;
                 select.appendChild(option);
             });
+            // Seleccionar el mejor formato por defecto (si existe)
+            if (select.options.length > 1) {
+                select.selectedIndex = 1; 
+            }
         } else {
-            // Si no hay formatos, añadir opción por defecto
-            let defaultOption = document.createElement("option");
-            defaultOption.value = "best";
-            defaultOption.textContent = "🎬 Mejor calidad disponible";
-            select.appendChild(defaultOption);
+             // Si solo hay audio (raro, pero posible) o no hay formatos detectables.
+            showAlert("Solo se detectó la opción de Audio MP3 o formatos limitados.", "info");
         }
 
         showAlert("Información del video cargada correctamente", "success");
@@ -244,7 +306,7 @@ function startDownload() {
 
     // Actualizar formulario oculto
     document.getElementById("hiddenUrl").value = url;
-    document.getElementById("hiddenResolution").value = selected;
+    document.getElementById("hiddenResolution").value = selected; // Esto es el format_id o "audio"
 
     // Enviar formulario
     fetch("/video_downloader", {
@@ -253,7 +315,12 @@ function startDownload() {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error(`Error ${response.status}: ${response.statusText}`);
+            // Si hay un error HTTP, leemos el cuerpo para obtener el error específico de Flask
+            return response.json().then(err => {
+                 throw new Error(err.error || `Error ${response.status}: ${response.statusText}`);
+            }).catch(() => {
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            });
         }
         
         // Obtener el download_id del header
@@ -262,9 +329,9 @@ function startDownload() {
         if (currentDownloadId) {
             // Iniciar seguimiento de progreso
             iniciarSeguimientoProgreso(currentDownloadId);
-            showAlert("Descarga iniciada correctamente", "success");
+            showAlert("Descarga iniciada correctamente. Esperando progreso...", "success");
         } else {
-            throw new Error("No se recibió ID de descarga");
+            throw new Error("No se recibió ID de descarga. Verifica la ruta /video_downloader.");
         }
     })
     .catch(error => {
@@ -281,8 +348,14 @@ function startDownload() {
 // SEGUIMIENTO DE PROGRESO (SSE)
 // =========================
 function iniciarSeguimientoProgreso(downloadId) {
-    const eventSource = new EventSource(`/progress/${downloadId}`);
+    // Asegúrate de cerrar cualquier EventSource anterior para evitar conexiones huérfanas
+    if (window.currentEventSource) {
+        window.currentEventSource.close();
+    }
     
+    const eventSource = new EventSource(`/progress/${downloadId}`);
+    window.currentEventSource = eventSource; // Guardar referencia
+
     eventSource.onmessage = function(event) {
         try {
             const data = JSON.parse(event.data);
@@ -295,12 +368,14 @@ function iniciarSeguimientoProgreso(downloadId) {
                     
                 case "downloading":
                     document.getElementById("progressStatus").textContent = "Descargando...";
+                    // data.progress es el porcentaje (0-100)
                     updateProgressBar(data.progress, data.speed, data.eta);
                     break;
                     
                 case "processing":
-                    document.getElementById("progressStatus").textContent = "Procesando video...";
-                    updateProgressBar(100, "", "Finalizando...");
+                    document.getElementById("progressStatus").textContent = "Procesando y combinando video/audio (esto puede tardar)...";
+                    // Fijo la barra al 100% animada durante el post-proceso
+                    updateProgressBar(100, "", "Finalizando..."); 
                     break;
                     
                 case "done":
@@ -316,7 +391,6 @@ function iniciarSeguimientoProgreso(downloadId) {
                         setTimeout(() => {
                             document.getElementById("btnDownload").style.display = "block";
                             document.getElementById("progressBox").style.display = "none";
-                            updateProgressBar(0);
                             showAlert("Archivo descargado correctamente", "success");
                         }, 3000);
                     }, 1500);
@@ -331,22 +405,23 @@ function iniciarSeguimientoProgreso(downloadId) {
                     setTimeout(() => {
                         document.getElementById("btnDownload").style.display = "block";
                         document.getElementById("progressBox").style.display = "none";
-                        showAlert(data.message || "Error en la descarga", "error");
+                        showAlert(data.message || "Error grave en la descarga. Intenta otro formato.", "error");
                     }, 3000);
                     break;
             }
         } catch (e) {
             console.error("Error procesando evento SSE:", e);
+            // Manejar error de parseo o de formato de datos
         }
     };
     
     eventSource.onerror = function() {
-        console.error("Error en conexión SSE");
+        console.error("Error en conexión SSE o servidor desconectado");
         eventSource.close();
         
         // Si estaba en progreso, mostrar error
-        if (document.getElementById("progressBox").style.display !== "none") {
-            document.getElementById("progressStatus").textContent = "Conexión perdida - Intenta nuevamente";
+        if (document.getElementById("progressBox").style.display !== "none" && document.getElementById("progressStatus").textContent.includes("Descargando")) {
+            document.getElementById("progressStatus").textContent = "Conexión interrumpida - Intenta nuevamente";
             
             setTimeout(() => {
                 document.getElementById("btnDownload").style.display = "block";
@@ -391,7 +466,7 @@ function formatTime(seconds) {
     if (hours > 0) {
         return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     } else {
-        return `${minutes}:${secs.toString().padStart(2, '0')}`;
+        return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
 }
 
@@ -408,18 +483,26 @@ function formatBytes(bytes, decimals = 2) {
 }
 
 function showAlert(message, type = "info") {
+    // Buscar si ya existe un contenedor de alertas (para evitar duplicados)
+    let alertContainer = document.getElementById("customAlertContainer");
+    if (!alertContainer) {
+        alertContainer = document.createElement('div');
+        alertContainer.id = "customAlertContainer";
+        // Insertar después del título
+        const container = document.querySelector('.glass-card');
+        const title = document.querySelector('h1');
+        container.insertBefore(alertContainer, title.nextElementSibling);
+    }
+    
     // Crear alerta Bootstrap
     const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show mt-3`;
+    alertDiv.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show mt-2`;
     alertDiv.innerHTML = `
         ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     `;
     
-    // Insertar después del título
-    const container = document.querySelector('.glass-card');
-    const title = document.querySelector('h1');
-    container.insertBefore(alertDiv, title.nextElementSibling);
+    alertContainer.appendChild(alertDiv);
     
     // Auto-eliminar después de 5 segundos
     setTimeout(() => {
@@ -429,7 +512,7 @@ function showAlert(message, type = "info") {
     }, 5000);
 }
 
-// Permitir Enter en el input
+// Permitir Enter en el input para cargar la info
 document.getElementById("videoUrl").addEventListener("keypress", function(e) {
     if (e.key === "Enter") {
         e.preventDefault();
@@ -442,69 +525,5 @@ window.addEventListener('load', function() {
     document.getElementById("videoUrl").focus();
 });
 </script>
-
-<style>
-.glass-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 15px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.text-gradient {
-    background: linear-gradient(45deg, #007bff, #6610f2);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-}
-
-.btn-gradient {
-    background: linear-gradient(45deg, #007bff, #6610f2);
-    border: none;
-    color: white;
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.btn-gradient:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
-}
-
-.input-group-text {
-    background: linear-gradient(45deg, #007bff, #6610f2);
-    color: white;
-    border: none;
-}
-
-.form-control:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
-}
-
-/* Responsive */
-@media (max-width: 576px) {
-    .glass-card {
-        margin: 10px;
-        padding: 15px !important;
-    }
-    
-    .input-group {
-        flex-direction: column;
-    }
-    
-    .input-group .form-control {
-        border-radius: 0.375rem 0.375rem 0 0 !important;
-        margin-bottom: -1px;
-    }
-    
-    .input-group .btn {
-        border-radius: 0 0 0.375rem 0.375rem !important;
-        width: 100%;
-    }
-
-    
-}
-</style>
 
 {% endblock %}
