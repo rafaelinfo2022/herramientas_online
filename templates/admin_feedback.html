@@ -1,90 +1,136 @@
 {% extends "base.html" %}
 {% block content %}
 
-<a href="{{ url_for('admin_logout') }}" style="float:right;">Cerrar sesión</a>
-
-<h2 style="text-align:center; font-weight:800;">📊 Panel Administrativo</h2>
+<div class="admin-header">
+    <h2>📊 Panel Administrativo</h2>
+    <a class="logout-btn" href="{{ url_for('admin_logout') }}">
+        <i class="ri-logout-box-r-line"></i> Salir
+    </a>
+</div>
 
 <!-- ============================= -->
-<!-- 📈 ESTADÍSTICAS DEL SITIO -->
+<!-- 🔥 TARJETAS DE RESUMEN -->
 <!-- ============================= -->
-<div style="max-width:900px; margin: 25px auto; background:#fff; padding:20px; 
-            border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+<div class="cards-container">
 
-    <h3 style="font-weight:700; margin-bottom:10px;">📈 Estadísticas Generales</h3>
+    <div class="card">
+        <h3>👁️ Visitas Totales</h3>
+        <p class="card-number">{{ stats.total_visits }}</p>
+    </div>
 
-    <p><strong>Visitas Totales:</strong> {{ stats.total_visits }}</p>
+    <div class="card">
+        <h3>📬 Mensajes sin leer</h3>
+        <p class="card-number">{{ unread_count }}</p>
+    </div>
 
-    <h4>📅 Visitas por Día (últimos 7 días)</h4>
-    <ul>
-        {% for day, count in daily %}
-        <li>{{ day }} → {{ count }}</li>
-        {% endfor %}
-    </ul>
+    <div class="card">
+        <h3>🔥 Herramienta más usada</h3>
+        <p class="card-number">
+            {% if ranking %}
+                {{ ranking[0][0] }}
+            {% else %}
+                —
+            {% endif %}
+        </p>
+    </div>
 
-    <h4>📆 Visitas por Semana (últimas 6 semanas)</h4>
-    <ul>
-        {% for week, count in weekly %}
-        <li>{{ week }} → {{ count }}</li>
-        {% endfor %}
-    </ul>
-
-    <h4>🗓 Visitas por Mes (últimos 6 meses)</h4>
-    <ul>
-        {% for month, count in monthly %}
-        <li>{{ month }} → {{ count }}</li>
-        {% endfor %}
-    </ul>
-
-    <h4>📅 Visitas por Año</h4>
-    <ul>
-        {% for year, count in stats.yearly.items() %}
-        <li>{{ year }} → {{ count }}</li>
-        {% endfor %}
-    </ul>
-
-    <h3 style="margin-top:25px;">🔥 Herramientas Más Usadas</h3>
-    <ol>
-        {% for tool, count in ranking %}
-        <li>{{ tool }} — {{ count }} usos</li>
-        {% endfor %}
-    </ol>
+    <div class="card">
+        <h3>📅 Promedio diario</h3>
+        <p class="card-number">{{ promedio_diario }}</p>
+    </div>
 
 </div>
 
 <!-- ============================= -->
+<!-- 📈 ESTADÍSTICAS DETALLADAS -->
+<!-- ============================= -->
+
+<div class="panel-box">
+
+    <h3>📈 Estadísticas Generales</h3>
+
+    <section>
+        <h4>📅 Visitas por Día (últimos 7 días)</h4>
+        <ul class="list-stats">
+            {% for day, count in daily %}
+            <li><strong>{{ day }}:</strong> {{ count }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section>
+        <h4>📆 Visitas por Semana (últimas 6 semanas)</h4>
+        <ul class="list-stats">
+            {% for week, count in weekly %}
+            <li><strong>{{ week }}:</strong> {{ count }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section>
+        <h4>🗓 Visitas por Mes (últimos 6 meses)</h4>
+        <ul class="list-stats">
+            {% for month, count in monthly %}
+            <li><strong>{{ month }}:</strong> {{ count }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section>
+        <h4>📅 Visitas por Año</h4>
+        <ul class="list-stats">
+            {% for year, count in stats.yearly.items() %}
+            <li><strong>{{ year }}:</strong> {{ count }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section>
+        <h3>🔥 Herramientas Más Usadas</h3>
+        <ol class="list-ranking">
+            {% for tool, count in ranking %}
+            <li>{{ tool }} — <strong>{{ count }}</strong> usos</li>
+            {% endfor %}
+        </ol>
+    </section>
+
+</div>
+
+
+<!-- ============================= -->
 <!-- 📨 MENSAJES RECIBIDOS -->
 <!-- ============================= -->
-<h2 style="text-align:center; font-weight:800;">📨 Mensajes Recibidos</h2>
 
-<div style="max-width:800px; margin: 20px auto;">
+<h2 class="sub-title">📨 Mensajes Recibidos</h2>
+
+<div class="messages-container">
+
     {% for c in comentarios %}
-    <div style="background:#fff; padding:15px; margin-bottom:15px; border-radius:10px; 
-                box-shadow:0 4px 12px rgba(0,0,0,0.1); 
-                border-left: 6px solid {% if c.leido %}#4caf50{% else %}#ff9800{% endif %};">
+    <div class="message-card {% if not c.leido %}no-leido{% endif %}">
 
         <p><strong>📅 Fecha:</strong> {{ c.fecha }}</p>
         <p><strong>👤 Nombre:</strong> {{ c.nombre or "No indicado" }}</p>
         <p><strong>📧 Email:</strong> {{ c.email or "No indicado" }}</p>
         <p><strong>💬 Mensaje:</strong><br> {{ c.mensaje }}</p>
 
-        <div style="margin-top:10px;">
+        <div class="msg-actions">
+
             {% if not c.leido %}
-            <a href="{{ url_for('marcar_leido', msg_id=c.id) }}" 
-            style="background:#ffc107; padding:6px 12px; border-radius:6px; color:black; text-decoration:none; margin-right:10px;">
+            <a class="btn btn-read" href="{{ url_for('marcar_leido', msg_id=c.id) }}">
                 ✔ Marcar leído
             </a>
             {% endif %}
 
-            <a href="{{ url_for('eliminar_mensaje', msg_id=c.id) }}" 
-            style="background:#f44336; padding:6px 12px; border-radius:6px; color:white; text-decoration:none;"
-            onclick="return confirm('¿Seguro que querés eliminar este mensaje?');">
+            <a class="btn btn-delete" 
+               href="{{ url_for('eliminar_mensaje', msg_id=c.id) }}"
+               onclick="return confirm('¿Seguro que querés eliminar este mensaje?');">
                 🗑 Eliminar
             </a>
-        </div>
 
+        </div>
     </div>
     {% endfor %}
+
 </div>
 
 {% endblock %}

@@ -498,3 +498,123 @@ textarea {
 .start-btn i {
     font-size: 20px;
 }
+
+/* Admin Feedback */
+/* ====== Encabezado ====== */
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 25px auto;
+    max-width: 900px;
+}
+
+.logout-btn {
+    background: #e53935;
+    padding: 8px 15px;
+    border-radius: 8px;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.logout-btn:hover {
+    background: #c62828;
+}
+
+/* ====== Tarjetas ====== */
+.cards-container {
+    max-width: 900px;
+    margin: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+}
+
+.card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.card-number {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1a73e8;
+}
+
+/* ====== Panel principal ====== */
+.panel-box {
+    max-width: 900px;
+    margin: 30px auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.panel-box h3 {
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.list-stats li,
+.list-ranking li {
+    padding: 4px 0;
+}
+
+/* ====== Mensajes ====== */
+.sub-title {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.messages-container {
+    max-width: 900px;
+    margin: 20px auto;
+}
+
+.message-card {
+    background: #fff;
+    padding: 18px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-left: 6px solid #4caf50;
+}
+
+.message-card.no-leido {
+    border-left-color: #ff9800;
+    background: #fff8e1;
+}
+
+.msg-actions {
+    margin-top: 10px;
+}
+
+.btn {
+    padding: 7px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    margin-right: 10px;
+}
+
+.btn-read {
+    background: #ffc107;
+    color: #000;
+}
+
+.btn-delete {
+    background: #f44336;
+    color: #fff;
+}
