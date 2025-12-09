@@ -8,7 +8,7 @@
 
         <p class="text-center text-muted mb-4">
             Eliminá el fondo de cualquier imagen en segundos, usando
-            inteligencia artificial. Ideal para productos, perfiles y edicion rapida.
+            inteligencia artificial. Ideal para productos, perfiles y edición rápida.
         </p>
 
         {% if download_file %}
@@ -88,7 +88,7 @@
 </div>
 
 <!-- ============================= -->
-<!-- MODAL DE CÁMARA -->
+<!-- MODAL DE CÁMARA (MEJORADO) -->
 <!-- ============================= -->
 <div id="cameraModal" 
      style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -105,6 +105,13 @@
         <canvas id="cameraCanvas" style="display:none;"></canvas>
 
         <div class="text-center mt-3">
+
+            <!-- NUEVOS BOTONES -->
+            <div class="mb-3">
+                <button class="btn btn-outline-primary" id="frontCamBtn">🤳 Cámara frontal</button>
+                <button class="btn btn-outline-primary" id="rearCamBtn">📸 Cámara trasera</button>
+            </div>
+
             <button class="btn btn-primary" id="captureBtn">📸 Capturar</button>
             <button class="btn btn-secondary" id="closeCameraBtn">Cerrar</button>
         </div>
@@ -117,36 +124,50 @@
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
 
 <!-- ============================= -->
-<!-- SISTEMA DE CÁMARA -->
+<!-- SISTEMA DE CÁMARA MEJORADO -->
 <script>
 const openCameraBtn = document.getElementById("openCameraBtn");
 const cameraModal = document.getElementById("cameraModal");
 const cameraVideo = document.getElementById("cameraVideo");
 const cameraCanvas = document.getElementById("cameraCanvas");
+
 const captureBtn = document.getElementById("captureBtn");
 const closeCameraBtn = document.getElementById("closeCameraBtn");
+
+const frontCamBtn = document.getElementById("frontCamBtn");
+const rearCamBtn = document.getElementById("rearCamBtn");
+
 const fileInput = document.getElementById("fileInput");
 const fileInfo = document.getElementById("file-info");
+
 let stream = null;
 
-// Abrir cámara
+// Abrir modal
 openCameraBtn.addEventListener("click", async () => {
     cameraModal.style.display = "flex";
+    startCamera("user"); // frontal por defecto
+});
 
+// Iniciar cámara según modo
+async function startCamera(mode) {
     try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        if (stream) stream.getTracks().forEach(t => t.stop());
+
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: mode }
+        });
+
         cameraVideo.srcObject = stream;
+
     } catch (err) {
         alert("No se pudo acceder a la cámara.");
         cameraModal.style.display = "none";
     }
-});
+}
 
-// Cerrar cámara
-closeCameraBtn.addEventListener("click", () => {
-    cameraModal.style.display = "none";
-    if (stream) stream.getTracks().forEach(track => track.stop());
-});
+// Cambiar cámara
+frontCamBtn.addEventListener("click", () => startCamera("user"));
+rearCamBtn.addEventListener("click", () => startCamera({ exact: "environment" }));
 
 // Capturar foto
 captureBtn.addEventListener("click", () => {
@@ -171,17 +192,20 @@ captureBtn.addEventListener("click", () => {
         if (stream) stream.getTracks().forEach(track => track.stop());
     });
 });
+
+// Cerrar modal
+closeCameraBtn.addEventListener("click", () => {
+    cameraModal.style.display = "none";
+    if (stream) stream.getTracks().forEach(track => track.stop());
+});
 </script>
 
 <!-- ============================= -->
 <!-- PROCESAMIENTO DE IA -->
 <script>
 // DROPZONE
-const dropZone = document.getElementById("drop-zone");
+document.getElementById("drop-zone").addEventListener("click", () => fileInput.click());
 
-dropZone.addEventListener("click", () => fileInput.click());
-
-// Mostrar info
 fileInput.addEventListener("change", () => {
     if (fileInput.files.length > 0) {
         fileInfo.textContent =
@@ -190,7 +214,7 @@ fileInput.addEventListener("change", () => {
     }
 });
 
-// ============= IA HÍBRIDA =============
+// IA HÍBRIDA
 const form = document.getElementById("bgForm");
 const submitBtn = document.getElementById("submitBtn");
 const progressContainer = document.getElementById("progress-container");
@@ -210,7 +234,7 @@ form.addEventListener("submit", async (e) => {
     submitBtn.disabled = true;
     submitBtn.innerHTML = "Procesando IA...";
 
-    // Barra de progreso visual
+    // Barra visual
     let width = 0;
     let interval = setInterval(() => {
         if (width >= 85) clearInterval(interval);
@@ -226,7 +250,7 @@ form.addEventListener("submit", async (e) => {
 
     img.onload = async () => {
 
-        // OPTIMIZACIÓN: reducir imagen para evitar cuelgues
+        // Reducir imagen para evitar cuelgues
         const MAX_SIZE = 600;
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
@@ -252,10 +276,8 @@ form.addEventListener("submit", async (e) => {
 
         selfie.onResults((res) => {
 
-            // Colocar máscara base
             ctx.drawImage(res.segmentationMask, 0, 0, w, h);
 
-            // Blur suave
             ctx.filter = "blur(3px)";
             ctx.globalCompositeOperation = "source-in";
             ctx.drawImage(img, 0, 0, w, h);
@@ -267,15 +289,12 @@ form.addEventListener("submit", async (e) => {
                 formData.append("file", imgFile);
                 formData.append("mask", blob, "mask.png");
 
-                progressText.textContent = "Mejorando recorte...";
-
                 const response = await fetch("/remove-background", {
                     method: "POST",
                     body: formData
                 });
 
-                const html = await response.text();
-                document.body.innerHTML = html;
+                document.body.innerHTML = await response.text();
 
             }, "image/png");
         });
