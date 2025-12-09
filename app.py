@@ -733,7 +733,6 @@ def word_to_pdf():
 # --------- 7) PDF A IMÁGENES ---------
 import platform
 
-# --------- 7) PDF A IMÁGENES ---------
 @app.route("/pdf-to-images", methods=["GET", "POST"])
 def pdf_to_images():
     register_tool("pdf-to-images")
@@ -979,52 +978,76 @@ def image_to_icon():
 
 
 # --------- 12) QUITAR FONDO DE IMAGEN ---------
+# ============================
+#  REMOVE BACKGROUND HÍBRIDO (MediaPipe + rembg optimizado)
+# ============================
 @app.route("/remove-background", methods=["GET", "POST"])
 def remove_background():
     register_tool("remove-background")
+
     if request.method == "POST":
-
-        file = request.files.get("file")
-        if not file or file.filename == "":
-            flash("Seleccioná una imagen para procesar.", "error")
-            return redirect(request.url)
-
         try:
-            # Guardar entrada
+            # Imagen original
+            file = request.files.get("file")
+            if not file or file.filename == "":
+                flash("Subí una imagen válida.", "error")
+                return redirect(request.url)
+
             filename = secure_filename(file.filename)
             input_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
             file.save(input_path)
 
-            # Leer bytes
-            with open(input_path, "rb") as i:
-                input_data = i.read()
+            # Máscara corregida desde el navegador
+            mask_file = request.files.get("mask")
+            if not mask_file:
+                flash("No se recibió la máscara generada por IA.", "error")
+                return redirect(request.url)
 
-            # 🔥 IA de eliminación con modelo ya cargado (rápido)
-            output_data = remove(input_data, session=BG_MODEL)
+            mask_path = os.path.join(app.config["UPLOAD_FOLDER"], f"mask_{filename}.png")
+            mask_file.save(mask_path)
 
-            # Nombre de salida
+            # Leer datos
+            with open(input_path, "rb") as f:
+                img_bytes = f.read()
+
+            with open(mask_path, "rb") as f:
+                mask_bytes = f.read()
+
+            # REMBG optimizado con parámetros suaves (no borrar cuerpo)
+            result = remove(
+                img_bytes,
+                session=BG_MODEL,
+                alpha_matting=True,
+                alpha_matting_foreground_threshold=210,
+                alpha_matting_background_threshold=20,
+                alpha_matting_erode_size=3,
+                mask=mask_bytes
+            )
+
+            # Guardar resultado final
             out_name = f"{uuid.uuid4().hex}_nofondo.png"
             output_path = os.path.join(app.config["GENERATED_FOLDER"], out_name)
 
-            # Guardar imagen final
             with open(output_path, "wb") as o:
-                o.write(output_data)
+                o.write(result)
 
-            # Limpieza automática del archivo original
+            # Limpieza
             try:
                 os.remove(input_path)
+                os.remove(mask_path)
             except:
                 pass
 
-            flash("Fondo eliminado correctamente.", "success")
+            flash("Fondo eliminado correctamente con IA avanzada.", "success")
             return render_template("remove_background.html", download_file=out_name)
 
         except Exception as e:
-            print("❌ ERROR en Quitar Fondo:", e)
+            print("❌ ERROR en quitar fondo híbrido:", e)
             flash("Ocurrió un error al procesar la imagen. Probá con otra.", "error")
             return redirect(request.url)
 
     return render_template("remove_background.html")
+
 
 # --------- 13) PDF A EXCEL (CON OCR DEFINITIVO) ---------
 
